@@ -26,8 +26,8 @@
 ## 💻 Tech Stack
 
 * **Frontend**: React (Vite, TypeScript, Tailwind CSS, Motion animations)
-* **Backend**: Node.js, Express, TypeScript (built to standalone CJS server)
-* **AI Engine**: Google Gemini Pro (with local robust fallbacks)
+* **Backend**: Python (Flask, Requests, Pydantic, Python-dotenv)
+* **AI Engine**: Google Gemini Pro (via the official Google GenAI SDK with local fallbacks)
 * **Animations**: Canvas procedural math & `motion` library
 
 ---
@@ -35,7 +35,8 @@
 ## 🏃 Getting Started
 
 ### Prerequisites
-* [Node.js](https://nodejs.org/) (v18 or higher)
+* [Python 3.10+](https://www.python.org/)
+* [Node.js](https://nodejs.org/) (v18 or higher - for frontend compilation)
 * A Gemini API Key (optional for the live AI generator)
 
 ### Installation
@@ -45,8 +46,9 @@
    cd Truthverse_AI-truth-or-dare-
    ```
 
-2. Install dependencies:
+2. Install python and frontend dependencies:
    ```bash
+   pip install flask requests google-genai python-dotenv pydantic
    npm install
    ```
 
