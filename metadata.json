@@ -1,0 +1,11 @@
+{
+  "name": "TruthVerse AI",
+  "description": "An interactive, AI-powered Truth & Dare game engine featuring high-performance HTML5 Canvas procedural animations, custom spinning wheels, voice assistants, and camera scanners.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
