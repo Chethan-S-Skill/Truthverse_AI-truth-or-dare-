@@ -16,7 +16,7 @@ from translations import TRANSLATIONS, ANNOUNCEMENT_TRANSLATIONS, VOICE_COMMANDS
 load_dotenv()
 
 app = Flask(__name__)
-PORT = 3000
+PORT = int(os.environ.get("PORT", 3000))
 
 # Initialize Google GenAI Client
 api_key = os.environ.get("GEMINI_API_KEY", "")
@@ -607,4 +607,5 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=PORT, debug=True)
+    debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() in ("true", "1", "t")
+    app.run(host="0.0.0.0", port=PORT, debug=debug_mode)
