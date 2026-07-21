@@ -1,3 +1,5 @@
+App Link:https://truthverse-ai.ai.studio/
+
 # 🎡 TruthVerse AI
 
 **TruthVerse AI** is an interactive, AI-powered Truth or Dare game engine featuring high-performance dynamic mechanics, immersive visuals, hands-free voice commands, and an AI companion. 
