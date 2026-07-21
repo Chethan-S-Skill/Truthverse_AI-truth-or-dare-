@@ -1,0 +1,4 @@
+# Force GitHub Linguist to detect and count translations and questions as Python source code
+translations.py linguist-detectable=true
+questions.py linguist-detectable=true
+server.py linguist-detectable=true
