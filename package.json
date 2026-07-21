@@ -5,7 +5,7 @@
   "description": "TruthVerse AI - Futuristic Real-Time Truth or Dare Game Engine in Pure Python Flask",
   "scripts": {
     "dev": "python3 server.py",
-    "build": "echo 'Pure Python: No node compilation required.'",
+    "build": "pip3 install --break-system-packages -r requirements.txt",
     "start": "python3 server.py",
     "clean": "echo 'Clean complete'",
     "lint": "python3 -m py_compile server.py questions.py"
