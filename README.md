@@ -10,7 +10,6 @@ Built as a lightweight, clean **Python Flask** application with a responsive **T
 
 * **🎡 Dynamic Spinning Wheel**: High-performance HTML5 Canvas custom-drawn wheel for smooth visual selections.
 * **🗣️ Voice Commands**: Fully hands-free controls ("spin the wheel", "select truth", "select dare", "next", etc.) with multi-language and regional dialect voice recognition.
-* **📸 Camera Assistant**: Live facial-expression scanner and interactive photo filter booth to capture players during their hilarious challenges.
 * **🤖 AI Challenge Generator**: High-fidelity dynamic truth or dare prompt generation tailored to player categories with premium local fallback generators.
 * **🎮 Mini-Game Playground**: Interactive quick mini-challenges to break the ice between rounds.
 
