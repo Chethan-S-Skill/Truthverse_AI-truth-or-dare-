@@ -1,6 +1,8 @@
 # 🎡 TruthVerse AI
 
-**TruthVerse AI** is an interactive, AI-powered Truth or Dare game engine featuring high-performance dynamic mechanics, immersive visuals, voice-controlled commands, and an AI companion. 
+**TruthVerse AI** is an interactive, AI-powered Truth or Dare game engine featuring high-performance dynamic mechanics, immersive visuals, hands-free voice commands, and an AI companion. 
+
+Built as a lightweight, clean **Python Flask** application with a responsive **Tailwind CSS** frontend, the entire game engine runs seamlessly on all devices without requiring any complex build systems.
 
 ---
 
@@ -14,21 +16,11 @@
 
 ---
 
-## 🛠️ How It Works
-
-1. **Setup Players**: Enter the lobby, add your friends, and select custom profile configurations.
-2. **Spin & Choose**: Spin the custom wheel to select a player, or use the voice assistant by saying **"Spin the wheel"**.
-3. **Select Your Fate**: Use standard UI buttons or voice commands (**"Truth"** or **"Dare"**) to fetch a customized challenge.
-4. **Complete with Camera**: Execute your challenge in front of the active **Camera Assistant** for immersive effects, filters, and dynamic gameplay.
-
----
-
 ## 💻 Tech Stack
 
-* **Frontend**: React (Vite, TypeScript, Tailwind CSS, Motion animations)
 * **Backend**: Python (Flask, Requests, Pydantic, Python-dotenv)
-* **AI Engine**: Google Gemini Pro (via the official Google GenAI SDK with local fallbacks)
-* **Animations**: Canvas procedural math & `motion` library
+* **Frontend**: HTML5, Canvas Procedural Graphics, Tailwind CSS, Lucide icons, Responsive layout
+* **AI Engine**: Google Gemini (via the official Google GenAI SDK with local fallbacks)
 
 ---
 
@@ -36,20 +28,19 @@
 
 ### Prerequisites
 * [Python 3.10+](https://www.python.org/)
-* [Node.js](https://nodejs.org/) (v18 or higher - for frontend compilation)
 * A Gemini API Key (optional for the live AI generator)
 
 ### Installation
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/Chethan-S-Skill/Truthverse_AI-truth-or-dare-.git
    cd Truthverse_AI-truth-or-dare-
    ```
 
-2. Install python and frontend dependencies:
+2. Install Python dependencies:
    ```bash
    pip install flask requests google-genai python-dotenv pydantic
-   npm install
    ```
 
 3. Configure your Environment:
@@ -59,12 +50,10 @@
    ```
 
 ### Running the App
-* **Development mode**:
-  ```bash
-  npm run dev
-  ```
-* **Production Build**:
-  ```bash
-  npm run build
-  npm start
-  ```
+
+Run the Flask server:
+```bash
+python server.py
+```
+
+Open your browser and navigate to `http://localhost:3000` to start playing!
