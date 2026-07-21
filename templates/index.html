@@ -260,7 +260,7 @@
               </div>
               <div>
                 <p class="text-xs text-slate-500 font-bold uppercase tracking-wider" id="prestige-top-player-label">Top Champion</p>
-                <p class="text-sm font-semibold text-slate-200" id="prestige-top-player">Chethan</p>
+                <p class="text-sm font-semibold text-slate-200" id="prestige-top-player">Player 1</p>
               </div>
             </div>
 
@@ -353,7 +353,7 @@
             <i data-lucide="sparkles" class="w-8 h-8 text-indigo-400"></i>
           </div>
           <h2 class="font-display font-bold text-2xl mb-1 text-slate-200">
-            <span id="active-player-highlight" class="text-indigo-400">Chethan</span>, <span id="choose-fate-title">Choose Your Fate!</span>
+            <span id="active-player-highlight" class="text-indigo-400">Player 1</span>, <span id="choose-fate-title">Choose Your Fate!</span>
           </h2>
           <p class="text-sm text-slate-500 mb-8 max-w-sm" id="fate-tip">
             Will you speak the absolute, raw truth, or tackle a cosmic AI-generated action dare?
@@ -1196,8 +1196,8 @@
 
     // Core Game States
     let players = [
-      { id: "1", name: "Chethan", score: 0, color: AVATAR_COLORS[0] },
-      { id: "2", name: "Priya", score: 0, color: AVATAR_COLORS[4] }
+      { id: "1", name: "Player 1", score: 0, color: AVATAR_COLORS[0] },
+      { id: "2", name: "Player 2", score: 0, color: AVATAR_COLORS[4] }
     ];
     let selectedPlayer = null;
     let currentChallenge = null;
@@ -2812,7 +2812,7 @@
       const isChallenge = !document.getElementById("view-challenge").classList.contains("hidden");
       
       if (isSetup) {
-        subtitle.innerText = 'Say "Add player [Name]" (e.g. "Add player Chethan") or "Enter Playground" to begin...';
+        subtitle.innerText = 'Say "Add player [Name]" (e.g. "Add player Rahul") or "Enter Playground" to begin...';
       } else if (isLobby) {
         subtitle.innerText = 'Say "Spin" or "Spin the wheel" to select the active player...';
       } else if (isChallenge) {
