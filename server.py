@@ -11,6 +11,7 @@ from typing import List
 
 # Import our lists of Truths and Dares
 from questions import TRUTHS_KIDS, TRUTHS_ADULTS, DARES_KIDS, DARES_ADULTS
+from translations import TRANSLATIONS, ANNOUNCEMENT_TRANSLATIONS, VOICE_COMMANDS, ANNOUNCEMENT_PHONETIC_TRANSLATIONS
 
 load_dotenv()
 
@@ -69,29 +70,174 @@ class ChallengeResponse(BaseModel):
 def get_fallback_svg(prompt_text):
     lowercase_prompt = (prompt_text or "").lower()
     icon_svg = ""
-    bg_color = "#1e1b4b"
-    accent_color = "#6366f1"
+    bg_color = "#020617"
+    accent_color = "#3b82f6"
     
-    if "truth" in lowercase_prompt or "question" in lowercase_prompt or "ask" in lowercase_prompt or "speak" in lowercase_prompt or "talk" in lowercase_prompt:
-        bg_color = "#0f172a"
-        accent_color = "#818cf8"
+    # 1. Animal / Pets / Cute creatures
+    if any(k in lowercase_prompt for k in ["penguin", "crab", "fish", "worm", "panda", "sloth", "cat", "dog", "chicken", "duck", "monkey", "lion", "animal", "dinosaur", "dino", "beast", "pet"]):
+        bg_color = "#064e3b" # Deep emerald
+        accent_color = "#34d399" # Bright green
+        if "penguin" in lowercase_prompt:
+            icon_svg = """
+              <ellipse cx="100" cy="110" rx="45" ry="55" fill="#1e293b" />
+              <ellipse cx="100" cy="115" rx="30" ry="40" fill="#ffffff" />
+              <circle cx="85" cy="80" r="6" fill="#1e293b" />
+              <circle cx="115" cy="80" r="6" fill="#1e293b" />
+              <polygon points="100,85 92,95 108,95" fill="#f59e0b" />
+              <ellipse cx="65" cy="110" rx="10" ry="25" fill="#1e293b" transform="rotate(-15, 65, 110)" />
+              <ellipse cx="135" cy="110" rx="10" ry="25" fill="#1e293b" transform="rotate(15, 135, 110)" />
+              <ellipse cx="85" cy="160" rx="15" ry="8" fill="#f59e0b" />
+              <ellipse cx="115" cy="160" rx="15" ry="8" fill="#f59e0b" />
+            """
+        elif "chicken" in lowercase_prompt or "duck" in lowercase_prompt:
+            icon_svg = """
+              <circle cx="100" cy="100" r="45" fill="#f59e0b" opacity="0.2" />
+              <circle cx="100" cy="100" r="35" fill="#fbbf24" />
+              <circle cx="90" cy="90" r="5" fill="#111827" />
+              <circle cx="110" cy="90" r="5" fill="#111827" />
+              <polygon points="100,95 90,105 110,105" fill="#f97316" />
+              <path d="M100,55 C105,45 115,50 100,65 Z" fill="#ef4444" />
+            """
+        elif "monkey" in lowercase_prompt:
+            icon_svg = """
+              <circle cx="100" cy="100" r="45" fill="#78350f" />
+              <ellipse cx="100" cy="110" rx="35" ry="28" fill="#fde047" opacity="0.8" />
+              <circle cx="60" cy="85" r="15" fill="#78350f" />
+              <circle cx="140" cy="85" r="15" fill="#78350f" />
+              <circle cx="85" cy="90" r="6" fill="#111827" />
+              <circle cx="115" cy="90" r="6" fill="#111827" />
+              <path d="M90,115 Q100,125 110,115" fill="none" stroke="#78350f" stroke-width="4" stroke-linecap="round" />
+            """
+        else: # Generic cute paw print
+            icon_svg = f"""
+              <circle cx="100" cy="115" r="30" fill="{accent_color}" />
+              <circle cx="70" cy="75" r="12" fill="{accent_color}" />
+              <circle cx="100" cy="60" r="14" fill="{accent_color}" />
+              <circle cx="130" cy="75" r="12" fill="{accent_color}" />
+            """
+            
+    # 2. Tech / Phone / Call / Apps / Screens
+    elif any(k in lowercase_prompt for k in ["phone", "call", "alien", "gps", "message", "text", "app", "boss", "webcam", "camera", "computer", "wi-fi", "wifi"]):
+        bg_color = "#1e1b4b" # Deep Indigo
+        accent_color = "#818cf8" # Indigo light
         icon_svg = f"""
-          <circle cx="100" cy="90" r="40" fill="{accent_color}" opacity="0.15" />
-          <path d="M100,55 A35,35 0 1,1 65,90" fill="none" stroke="{accent_color}" stroke-width="8" stroke-linecap="round" />
-          <circle cx="100" cy="125" r="5" fill="{accent_color}" />
-          <path d="M75,150 L125,150 M85,160 L115,160" stroke="{accent_color}" stroke-width="6" stroke-linecap="round" />
+          <rect x="65" y="40" width="70" height="120" rx="12" fill="#312e81" stroke="{accent_color}" stroke-width="6" />
+          <rect x="73" y="52" width="54" height="85" rx="6" fill="#1e1b4b" />
+          <circle cx="100" cy="148" r="6" fill="{accent_color}" />
+          <line x1="90" y1="46" x2="110" y2="46" stroke="{accent_color}" stroke-width="3" stroke-linecap="round" />
+          <path d="M85,75 L95,85 M115,70 L105,80" stroke="{accent_color}" stroke-width="4" stroke-linecap="round" />
+          <circle cx="100" cy="80" r="15" fill="{accent_color}" opacity="0.3" />
         """
-    elif "dare" in lowercase_prompt or "action" in lowercase_prompt or "fire" in lowercase_prompt or "run" in lowercase_prompt or "jump" in lowercase_prompt or "do" in lowercase_prompt or "ball" in lowercase_prompt or "balloon" in lowercase_prompt:
-        bg_color = "#180815"
-        accent_color = "#f43f5e"
+        
+    # 3. Singing / Music / Microphone / Sound
+    elif any(k in lowercase_prompt for k in ["sing", "song", "opera", "music", "mic", "microphone", "scream", "shout", "vocal", "sound", "noise", "alphabet"]):
+        bg_color = "#311042" # Deep violet
+        accent_color = "#c084fc" # Purple sparkle
+        icon_svg = f"""
+          <line x1="100" y1="130" x2="100" y2="175" stroke="{accent_color}" stroke-width="6" stroke-linecap="round" />
+          <line x1="75" y1="175" x2="125" y2="175" stroke="{accent_color}" stroke-width="6" stroke-linecap="round" />
+          <rect x="88" y="75" width="24" height="60" rx="12" fill="#581c87" stroke="{accent_color}" stroke-width="4" />
+          <circle cx="100" cy="65" r="22" fill="{accent_color}" />
+          <circle cx="100" cy="65" r="18" fill="#ffffff" opacity="0.4" />
+          <path d="M130,45 A8,8 0 0,0 125,50 L125,75 A5,5 0 1,1 120,80" fill="none" stroke="{accent_color}" stroke-width="4" stroke-linecap="round" />
+          <path d="M65,55 A8,8 0 0,0 60,60 L60,85 A5,5 0 1,1 55,90" fill="none" stroke="{accent_color}" stroke-width="4" stroke-linecap="round" />
+        """
+        
+    # 4. Dance / Active / Jumping / Run / Physical movement
+    elif any(k in lowercase_prompt for k in ["dance", "dancing", "jump", "run", "hop", "active", "foot", "feet", "crab", "climb", "walk", "slow motion", "slide"]):
+        bg_color = "#4c0519" # Rose dark
+        accent_color = "#fb7185" # Rose light
+        icon_svg = f"""
+          <circle cx="100" cy="60" r="18" fill="{accent_color}" />
+          <path d="M100,78 L100,115 L80,145 M100,115 L120,145" stroke="{accent_color}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M65,85 Q85,100 100,90 Q115,80 135,95" fill="none" stroke="{accent_color}" stroke-width="8" stroke-linecap="round" />
+          <circle cx="65" cy="55" r="4" fill="#ffffff" />
+          <circle cx="135" cy="55" r="4" fill="#ffffff" />
+          <circle cx="100" cy="160" r="5" fill="{accent_color}" opacity="0.4" />
+        """
+        
+    # 5. Food / Eating / Drink / Chef
+    elif any(k in lowercase_prompt for k in ["eat", "eating", "bite", "taste", "cookie", "spaghetti", "banana", "pizza", "apple", "fruit", "vegetable", "chef", "fridge", "snack", "cook"]):
+        bg_color = "#451a03" # Warm brown
+        accent_color = "#f97316" # Orange
+        if "banana" in lowercase_prompt:
+            icon_svg = """
+              <path d="M140,50 C100,50 60,80 60,130 C60,145 70,155 85,155 C115,155 145,115 150,85 C152,70 148,60 140,50 Z" fill="#eab308" />
+              <path d="M135,53 C105,53 72,78 72,125 Q72,143 85,143 C108,143 133,110 138,85" fill="none" stroke="#facc15" stroke-width="4" stroke-linecap="round" />
+              <path d="M140,50 L146,42" stroke="#78350f" stroke-width="6" stroke-linecap="round" />
+              <path d="M60,130 L55,134" stroke="#78350f" stroke-width="6" stroke-linecap="round" />
+            """
+        elif "cookie" in lowercase_prompt or "eat" in lowercase_prompt or "snack" in lowercase_prompt:
+            icon_svg = """
+              <circle cx="100" cy="100" r="50" fill="#d97706" />
+              <circle cx="80" cy="80" r="6" fill="#451a03" />
+              <circle cx="120" cy="85" r="7" fill="#451a03" />
+              <circle cx="95" cy="115" r="6" fill="#451a03" />
+              <circle cx="115" cy="120" r="5" fill="#451a03" />
+              <circle cx="75" cy="110" r="7" fill="#451a03" />
+              <path d="M140,70 A25,25 0 0,0 150,110 A25,25 0 0,0 130,135" fill="#451a03" stroke="#451a03" stroke-width="4" />
+            """
+        else: # Food bowl
+            icon_svg = f"""
+              <path d="M50,90 Q100,85 150,90 L135,140 Q100,150 65,140 Z" fill="#e2e8f0" stroke="{accent_color}" stroke-width="6" />
+              <ellipse cx="100" cy="90" rx="45" ry="15" fill="{accent_color}" />
+              <path d="M85,65 Q90,50 85,40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+              <path d="M115,65 Q120,50 115,40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+            """
+            
+    # 6. Sleep / Bed / Sleepy / Pillow
+    elif any(k in lowercase_prompt for k in ["sleep", "sleepy", "bed", "pillow", "napper", "dream", "night", "room", "statue"]):
+        bg_color = "#030712" # Space Black
+        accent_color = "#38bdf8" # Sky blue
+        icon_svg = f"""
+          <path d="M130,120 A45,45 0 1,1 80,45 A45,45 0 0,0 130,120 Z" fill="{accent_color}" />
+          <polygon points="65,55 67,61 73,61 69,65 71,71 65,67 59,71 61,65 57,61 63,61" fill="#ffffff" />
+          <polygon points="135,45 137,51 143,51 139,55 141,61 135,57 129,61 131,55 127,51 133,51" fill="#ffffff" />
+          <text x="110" y="85" font-family="sans-serif" font-weight="bold" font-size="20" fill="#fef08a">Z</text>
+          <text x="125" y="65" font-family="sans-serif" font-weight="bold" font-size="14" fill="#fef08a">z</text>
+          <text x="135" y="50" font-family="sans-serif" font-weight="bold" font-size="10" fill="#fef08a">z</text>
+        """
+        
+    # 7. Superhero / Cape / Pose / Winner / Crown
+    elif any(k in lowercase_prompt for k in ["superhero", "hero", "cape", "pose", "winner", "award", "trophy", "crown", "king", "queen"]):
+        bg_color = "#1e1b4b"
+        accent_color = "#fbbf24" # Gold yellow
+        icon_svg = f"""
+          <path d="M55,60 L75,60 L85,120 L65,120 Z" fill="#ef4444" opacity="0.8" />
+          <path d="M145,60 L125,60 L115,120 L135,120 Z" fill="#ef4444" opacity="0.8" />
+          <rect x="75" y="70" width="50" height="70" rx="10" fill="#1e3a8a" stroke="{accent_color}" stroke-width="4" />
+          <circle cx="100" cy="50" r="16" fill="#fde047" />
+          <polygon points="100,85 115,95 110,115 100,125 90,115 85,95" fill="{accent_color}" />
+          <text x="95" y="112" font-family="sans-serif" font-weight="bold" font-size="18" fill="#1e3a8a">S</text>
+        """
+        
+    # 8. Secret / Whisper / Talk / Speak / Voice / Truth
+    elif any(k in lowercase_prompt for k in ["secret", "whisper", "talk", "speak", "voice", "gossip", "hear", "ear", "mouth", "truth"]):
+        bg_color = "#0f172a"
+        accent_color = "#38bdf8"
+        icon_svg = f"""
+          <circle cx="70" cy="110" r="25" fill="#1e293b" stroke="{accent_color}" stroke-width="4" />
+          <circle cx="130" cy="110" r="25" fill="#1e293b" stroke="{accent_color}" stroke-width="4" />
+          <path d="M92,105 Q100,110 108,105" fill="none" stroke="{accent_color}" stroke-width="4" stroke-linecap="round" />
+          <path d="M90,95 Q100,85 110,95" fill="none" stroke="{accent_color}" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+          <path d="M100,80 L100,70" stroke="{accent_color}" stroke-width="4" stroke-linecap="round" />
+          <circle cx="100" cy="65" r="5" fill="{accent_color}" />
+        """
+        
+    # 9. Fire / Action / Challenge / Dare / Game Show
+    elif any(k in lowercase_prompt for k in ["dare", "action", "fire", "danger", "flame", "hot", "brave", "bold", "game show"]):
+        bg_color = "#1c0c0e"
+        accent_color = "#ef4444"
         icon_svg = f"""
           <path d="M100,35 C115,65 140,80 140,115 C140,145 120,165 100,165 C80,165 60,145 60,115 C60,75 85,55 100,35 Z" fill="{accent_color}" opacity="0.2" />
           <path d="M100,55 C110,75 125,85 125,110 C125,130 112,145 100,145 C88,145 75,130 75,110 C75,85 90,70 100,55 Z" fill="{accent_color}" />
           <path d="M100,75 C105,88 115,95 115,110 C115,120 108,128 100,128 C92,128 85,120 85,110 C85,95 95,88 100,75 Z" fill="#ffffff" />
         """
+        
+    # 10. Default Spark / Star for general magic / mystery / unclassified
     else:
-        bg_color = "#020617"
-        accent_color = "#fbbf24"
+        bg_color = "#0b1329"
+        accent_color = "#f59e0b"
         icon_svg = f"""
           <polygon points="100,30 118,70 160,73 128,102 138,145 100,122 62,145 72,102 40,73 82,70" fill="{accent_color}" opacity="0.15" />
           <polygon points="100,45 113,80 145,83 120,105 128,138 100,120 72,138 80,105 55,83 87,80" fill="{accent_color}" />
@@ -116,6 +262,54 @@ def get_fallback_svg(prompt_text):
     svg_string = " ".join(svg_string.split())
     base64_encoded = base64.b64encode(svg_string.encode('utf-8')).decode('utf-8')
     return f"data:image/svg+xml;base64,{base64_encoded}"
+
+
+def generate_dynamic_svg(prompt_text):
+    if not client:
+        return None
+    try:
+        system_instruction = """You are an expert SVG icon designer. Your task is to generate a beautiful, clean, modern flat-design SVG icon for a Truth or Dare game, specifically representing the given prompt.
+Rules:
+1. ONLY return the raw SVG code. Do not include any markdown formatting (like ```xml or ```svg), no explanation, no HTML wrapper. Just start with <svg> and end with </svg>.
+2. The SVG MUST have a viewBox of "0 0 200 200" and be fully responsive.
+3. Use a modern, dark aesthetic with deep, vibrant colors. Frame it with a beautiful rounded background card (rx="32") with a gradient or glowing effect.
+4. The icon itself must be clean, elegant, and highly relevant to the prompt. Use simple shapes, paths, and smooth lines.
+5. Ensure valid SVG syntax with self-closing tags. Do not use external resources."""
+        
+        user_prompt = f"Create a beautiful, simple, flat-style SVG icon for a cartoon illustration representing this action or question: {prompt_text}"
+        
+        print(f"[Info] Generating dynamic SVG using gemini-2.5-flash for: {prompt_text}")
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                temperature=0.2,
+            )
+        )
+        
+        svg_code = response.text.strip()
+        if "```" in svg_code:
+            import re
+            svg_match = re.search(r'<svg.*?</svg>', svg_code, re.DOTALL)
+            if svg_match:
+                svg_code = svg_match.group(0)
+            else:
+                lines = svg_code.split("\n")
+                clean_lines = []
+                for line in lines:
+                    if line.strip().startswith("```"):
+                        continue
+                    clean_lines.append(line)
+                svg_code = "\n".join(clean_lines).strip()
+                
+        if "<svg" in svg_code and "</svg>" in svg_code:
+            base64_encoded = base64.b64encode(svg_code.encode('utf-8')).decode('utf-8')
+            return f"data:image/svg+xml;base64,{base64_encoded}"
+    except Exception as e:
+        print(f"[Info] Dynamic SVG generation failed: {str(e)}")
+    return None
+
 
 
 def generate_fallback(mode, category, language, difficulty):
@@ -207,7 +401,7 @@ def generate_fallback(mode, category, language, difficulty):
             "creativityBonus": 5,
             "timeBonus": 5
         },
-        "illustrationPrompt": f"A cute flat colorful cartoon design representing {mode}",
+        "illustrationPrompt": f"A cute flat colorful cartoon design representing {selected_text}",
         "animation": {
             "theme": "Starlight Voyage" if mode == "Truth" else "Bouncing Bubble Wave",
             "description": f"An animated background matching your {mode} challenge.",
@@ -361,29 +555,49 @@ def generate_image():
         return jsonify({"imageUrl": get_fallback_svg(prompt), "isFallback": True})
         
     try:
-        image_response = client.models.generate_content(
-            model="gemini-3.1-flash-lite-image",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                image_config=types.ImageConfig(aspect_ratio="1:1")
+        # Try high-quality Imagen 3 model first via generate_images
+        print(f"[Info] Generating image using imagen-3.0-generate-002 for: {prompt}")
+        result = client.models.generate_images(
+            model='imagen-3.0-generate-002',
+            prompt=prompt,
+            config=types.GenerateImagesConfig(
+                number_of_images=1,
+                aspect_ratio="1:1",
+                output_mime_type="image/jpeg"
             )
         )
+        if result.generated_images:
+            image_bytes = result.generated_images[0].image.image_bytes
+            base64_image = base64.b64encode(image_bytes).decode('utf-8')
+            print("[Info] Successfully generated image via imagen-3.0-generate-002")
+            return jsonify({"imageUrl": f"data:image/jpeg;base64,{base64_image}"})
+            
+    except Exception as e1:
+        print(f"[Info] Imagen 3 generation failed: {str(e1)}. Trying dynamic SVG generation via Gemini 2.5 Flash as second layer...")
         
-        base64_image = ""
-        if image_response.candidates and image_response.candidates[0].content and image_response.candidates[0].content.parts:
-            for part in image_response.candidates[0].content.parts:
-                if part.inline_data:
-                    base64_image = part.inline_data.data
-                    break
-                    
-        if base64_image:
-            return jsonify({"imageUrl": f"data:image/png;base64,{base64_image}"})
-        else:
-            print("[Info] No image generated from model. Falling back to SVG.")
-            return jsonify({"imageUrl": get_fallback_svg(prompt), "isFallback": True})
-    except Exception as e:
-        print(f"[Info] Handled illustration request with custom graphics engine: {str(e)}")
-        return jsonify({"imageUrl": get_fallback_svg(prompt), "isFallback": True})
+    try:
+        # Try dynamic SVG generation as high-fidelity vector fallback
+        svg_url = generate_dynamic_svg(prompt)
+        if svg_url:
+            print("[Info] Successfully generated custom dynamic SVG via gemini-2.5-flash")
+            return jsonify({"imageUrl": svg_url})
+            
+    except Exception as e2:
+        print(f"[Info] Dynamic SVG generation failed: {str(e2)}. Falling back to local graphics engine...")
+        
+    # Return custom procedural SVG as safe final fallback
+    print("[Info] Handled illustration request with custom graphics engine fallback.")
+    return jsonify({"imageUrl": get_fallback_svg(prompt), "isFallback": True})
+
+
+@app.route("/api/config/translations")
+def get_translations_config():
+    return jsonify({
+        "TRANSLATIONS": TRANSLATIONS,
+        "ANNOUNCEMENT_TRANSLATIONS": ANNOUNCEMENT_TRANSLATIONS,
+        "VOICE_COMMANDS": VOICE_COMMANDS,
+        "ANNOUNCEMENT_PHONETIC_TRANSLATIONS": ANNOUNCEMENT_PHONETIC_TRANSLATIONS
+    })
 
 
 # Render the single-page application template
