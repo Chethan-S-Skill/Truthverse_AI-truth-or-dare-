@@ -1455,6 +1455,39 @@
       updatePlayersSetupView();
     }
 
+    function addPlayerByName(name) {
+      if (!name) return;
+      const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+      
+      const color = AVATAR_COLORS[players.length % AVATAR_COLORS.length];
+      players.push({
+        id: Date.now().toString(),
+        name: formattedName,
+        score: 0,
+        color: color
+      });
+      updatePlayersSetupView();
+      
+      const currentLang = currentLanguageSetting || "English";
+      let announceText = `Added ${formattedName}!`;
+      if (currentLang === "Kannada") announceText = `${formattedName} ಸೇರಿಸಲಾಗಿದೆ!`;
+      else if (currentLang === "Hindi") announceText = `${formattedName} को जोड़ दिया गया है!`;
+      else if (currentLang === "Telugu") announceText = `${formattedName} ని చేర్చాము!`;
+      else if (currentLang === "Tamil") announceText = `${formattedName} சேர்க்கப்பட்டார்!`;
+      else if (currentLang === "Malayalam") announceText = `${formattedName} ചേർത്തു!`;
+      else if (currentLang === "Marathi") announceText = `${formattedName} जोडले गेले!`;
+      else if (currentLang === "Gujarati") announceText = `${formattedName} ઉમેરાયો!`;
+      else if (currentLang === "Bengali") announceText = `${formattedName} যুক্ত করা হয়েছে!`;
+      else if (currentLang === "Punjabi") announceText = `${formattedName} ਨੂੰ ਜੋੜਿਆ ਗਿਆ!`;
+      else if (currentLang === "Odia") announceText = `${formattedName} ଯୋଡ଼ାଗଲା!`;
+
+      if ("speechSynthesis" in window) {
+        const u = new SpeechSynthesisUtterance(announceText);
+        u.lang = getLocalVoiceLangCode();
+        speakSafe(u);
+      }
+    }
+
     function removePlayer(id) {
       players = players.filter(p => p.id !== id);
       updatePlayersSetupView();
@@ -1471,6 +1504,7 @@
       document.getElementById("view-setup").classList.remove("hidden");
       document.getElementById("view-lobby").classList.add("hidden");
       document.getElementById("view-challenge").classList.add("hidden");
+      updateVoiceHUDInstructions();
       scrollToTop();
     }
 
@@ -1484,6 +1518,7 @@
       document.getElementById("view-setup").classList.add("hidden");
       document.getElementById("view-lobby").classList.remove("hidden");
       document.getElementById("view-challenge").classList.add("hidden");
+      updateVoiceHUDInstructions();
       
       updateLobbyScoreboard();
       drawLobbySpinningWheel();
@@ -1645,6 +1680,7 @@
       // Show View challenge
       document.getElementById("view-lobby").classList.add("hidden");
       document.getElementById("view-challenge").classList.remove("hidden");
+      updateVoiceHUDInstructions();
       scrollToTop();
 
       // Set state
@@ -2291,6 +2327,7 @@
 
         const data = await response.json();
         currentChallenge = data;
+        updateVoiceHUDInstructions();
         
         // Hide overlay & setup UI
         overlay.classList.add("hidden");
@@ -2499,6 +2536,7 @@
       setTimeout(() => {
         document.getElementById("view-challenge").classList.add("hidden");
         document.getElementById("view-lobby").classList.remove("hidden");
+        updateVoiceHUDInstructions();
         updateLobbyScoreboard();
         drawLobbySpinningWheel();
         scrollToTop();
@@ -2513,6 +2551,7 @@
       
       document.getElementById("view-challenge").classList.add("hidden");
       document.getElementById("view-lobby").classList.remove("hidden");
+      updateVoiceHUDInstructions();
       updateLobbyScoreboard();
       drawLobbySpinningWheel();
       scrollToTop();
@@ -2757,6 +2796,28 @@
     }
 
 
+    function updateVoiceHUDInstructions() {
+      const subtitle = document.getElementById("speech-subtitle-text");
+      if (!subtitle) return;
+      
+      const isSetup = !document.getElementById("view-setup").classList.contains("hidden");
+      const isLobby = !document.getElementById("view-lobby").classList.contains("hidden");
+      const isChallenge = !document.getElementById("view-challenge").classList.contains("hidden");
+      
+      if (isSetup) {
+        subtitle.innerText = 'Say "Add player [Name]" (e.g. "Add player Chethan") or "Enter Playground" to begin...';
+      } else if (isLobby) {
+        subtitle.innerText = 'Say "Spin" or "Spin the wheel" to select the active player...';
+      } else if (isChallenge) {
+        if (currentChallenge === null) {
+          subtitle.innerText = 'Say "Truth" or "Dare" to choose your prompt...';
+        } else {
+          subtitle.innerText = 'Say "Complete" to claim points, "Pass" to skip, or "Read" to read aloud!';
+        }
+      }
+    }
+
+
         // AI VOICE CONTROLLER SPEECH RECOGNITIONS
     function setupSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2821,6 +2882,55 @@
         const transcript = e.results[e.results.length - 1][0].transcript.trim().toLowerCase();
         document.getElementById("speech-subtitle-text").innerText = `Heard Command: "${transcript}"`;
         
+        // Handle adding a player by voice command
+        const isSetupActive = !document.getElementById("view-setup").classList.contains("hidden");
+        if (isSetupActive) {
+          const prefixes = [
+            "add player ", "add ", "new player ", "join ", "include ", "player ",
+            "ऐड प्लेयर ", "ऐड ", "जॉइन ", "ಜಾಯಿನ್ ", "ಆಡ್ "
+          ];
+          let isAddPlayerMatched = false;
+          let extractedName = "";
+          
+          for (const prefix of prefixes) {
+            if (transcript.startsWith(prefix)) {
+              extractedName = transcript.substring(prefix.length).trim();
+              isAddPlayerMatched = true;
+              break;
+            }
+          }
+          
+          if (!isAddPlayerMatched) {
+            const suffixes = [
+              " ಸೇರಿಸು", " ಆಟಗಾರ ಸೇರಿಸು", " ಸೇರಿಸಿ",
+              " जोड़ें", " जोड़ो", " को जोड़ो", " को जोड़ें", " ऐड करो", " एड करो",
+              " చేర్చు", " చేర్చండి",
+              " சேர்", " சேர்க்கவும்",
+              " ചേർക്കുക",
+              " ਜੋੜੋ",
+              " ଯୋଡନ୍ତୁ",
+              " जोडा",
+              " ઉમેરો",
+              " যুক্ত করুন", " যোগ করো"
+            ];
+            for (const suffix of suffixes) {
+              if (transcript.endsWith(suffix.toLowerCase())) {
+                extractedName = transcript.substring(0, transcript.length - suffix.length).trim();
+                isAddPlayerMatched = true;
+                break;
+              }
+            }
+          }
+          
+          if (isAddPlayerMatched && extractedName.length > 0) {
+            extractedName = extractedName.replace(/^(player|member|a|an|the|ആറ്റുകാർ|ആട്ടക്കാരൻ|ಕೋ|को|को) /i, "").trim();
+            if (extractedName.length > 0 && extractedName !== "player" && extractedName !== "member") {
+              addPlayerByName(extractedName);
+              return;
+            }
+          }
+        }
+
         // Match phrases using localized multi-lingual commands
         if (matchVoiceCommand(transcript, "start")) {
           if (!document.getElementById("view-setup").classList.contains("hidden")) {
@@ -2999,6 +3109,7 @@
           glowEffect.className = "absolute -top-12 -left-12 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none transition-all";
         }
       }
+      updateVoiceHUDInstructions();
     }
 
     function triggerVoiceCommand(phrase) {
