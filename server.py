@@ -1,7 +1,7 @@
 import os
 import random
 import base64
-from flask import Flask, request, jsonify, send_from_directory, Response
+from flask import Flask, request, jsonify, send_from_directory, Response, render_template
 import requests
 from dotenv import load_dotenv
 from google import genai
@@ -55,6 +55,7 @@ class ChallengeResponse(BaseModel):
     difficulty: str
     title: str
     challenge: str
+    phoneticChallenge: str = ""
     funnyHint: str
     estimatedTime: str
     score: Score
@@ -198,6 +199,7 @@ def generate_fallback(mode, category, language, difficulty):
         "difficulty": difficulty,
         "title": "Spark of Truth" if mode == "Truth" else "Power Dare",
         "challenge": selected_text,
+        "phoneticChallenge": selected_text,
         "funnyHint": "Be honest and speak clearly so everyone can hear you!" if mode == "Truth" else "Show your squad how brave you are with confidence!",
         "estimatedTime": "45 seconds",
         "score": {
@@ -300,6 +302,11 @@ Strict Game Engine Guidelines:
    - Hard: 30 points
    - Creativity Bonus: +5 points
    - Speed Bonus: +5 points
+7. Phonetic Challenge Guideline (Crucial):
+   - For English, set "phoneticChallenge" to the exact string: "{selected_text}".
+   - For all other languages, you MUST provide a high-quality phonetic Latin transliteration (Romanized / English spelling using standard Latin/English alphabet) of the translated challenge. This is used by the screen reader voice assistant to read the challenge correctly if a native voice pack is not installed on the user's browser/OS.
+     - Example Hindi: 'अपने सिर पर एक पुस्तक रखकर १० सेकंड के लिए चलें' -> 'Apne sir par ek pustak rakhkar das second ke liye chalein'
+     - Example Kannada: 'ನಿಮ್ಮ ತಲೆಯ ಮೇಲೆ ಪುಸ್ತಕವನ್ನಿಟ್ಟುಕೊಂಡು ೧೦ ಸೆಕೆಂಡುಗಳ ಕಾಲ ನಡೆದಾಡಿ' -> 'Nimma thaleya mele pusthakavannittukondu hatthu secondugala kaala nadedaadi'
 """
 
     user_prompt = f"""Wrap the predefined question "{selected_text}" into a premium challenge package with:
@@ -309,8 +316,8 @@ Strict Game Engine Guidelines:
 - Difficulty: {difficulty}
 
 Remember:
-- For English, the challenge field in the JSON MUST be exactly: "{selected_text}".
-- For other languages, return the precise direct translation of "{selected_text}".
+- For English, the challenge and phoneticChallenge fields in the JSON MUST be exactly: "{selected_text}".
+- For other languages, return the precise direct translation of "{selected_text}" in "challenge" and a phonetic Romanized transliteration in "phoneticChallenge".
 - Return JSON strictly following the required schema.
 - The javascript animation code must render on a HTML5 canvas. It should draw a beautiful, fun cartoon theme matching the challenge, and must run a render loop using requestAnimationFrame."""
 
@@ -331,6 +338,8 @@ Remember:
         # Override to be absolutely certain we use exact selected_text for English
         if not challenge_data.get("challenge") or language.lower() in ["english", "en"]:
             challenge_data["challenge"] = selected_text
+        if not challenge_data.get("phoneticChallenge") or language.lower() in ["english", "en"]:
+            challenge_data["phoneticChallenge"] = selected_text
             
         return jsonify(challenge_data)
     except Exception as e:
@@ -377,46 +386,10 @@ def generate_image():
         return jsonify({"imageUrl": get_fallback_svg(prompt), "isFallback": True})
 
 
-# Static assets & routing proxy
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
-def proxy(path):
-    # Production Mode (serve compiled dist files)
-    if os.environ.get("NODE_ENV") == "production":
-        dist_dir = os.path.join(os.getcwd(), "dist")
-        if not path or path == "/":
-            return send_from_directory(dist_dir, "index.html")
-            
-        file_path = os.path.join(dist_dir, path)
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            return send_from_directory(dist_dir, path)
-        return send_from_directory(dist_dir, "index.html")
-        
-    # Development Mode (Proxy to Vite on port 3001)
-    vite_url = f"http://localhost:3001/{path}"
-    if request.query_string:
-        vite_url += f"?{request.query_string.decode('utf-8')}"
-        
-    headers = {key: value for key, value in request.headers if key.lower() not in ['host', 'content-length']}
-    
-    try:
-        resp = requests.request(
-            method=request.method,
-            url=vite_url,
-            headers=headers,
-            data=request.get_data(),
-            cookies=request.cookies,
-            allow_redirects=False,
-            stream=True
-        )
-        
-        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-        resp_headers = [(name, value) for name, value in resp.raw.headers.items()
-                        if name.lower() not in excluded_headers]
-                        
-        return Response(resp.iter_content(chunk_size=1024), status=resp.status_code, headers=resp_headers)
-    except Exception as e:
-        return f"Failed to connect to Vite development server on port 3001: {str(e)}", 502
+# Render the single-page application template
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

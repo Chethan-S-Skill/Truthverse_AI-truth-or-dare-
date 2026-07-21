@@ -1,0 +1,3012 @@
+<!DOCTYPE html>
+<html lang="en" class="min-h-screen bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TruthVerse AI - Futuristic Real-Time Truth or Dare Game Engine</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Config to map custom fonts -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Keyframes for animations */
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.05); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes spin-slow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes scan {
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
+    }
+
+    .animate-pulse-slow {
+      animation: pulse-slow 8s infinite ease-in-out;
+    }
+    .animate-float {
+      animation: float 4s infinite ease-in-out;
+    }
+    .animate-spin-slow {
+      animation: spin-slow 20s linear infinite;
+    }
+    .animate-scan {
+      animation: scan 4s linear infinite;
+    }
+
+    /* Wheel highlight pointer */
+    .wheel-pointer::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 25px solid #ef4444;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+      z-index: 30;
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+
+  <!-- Ambient background glow particles -->
+  <div class="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950/40 via-slate-950 to-slate-950 pointer-events-none z-0"></div>
+  <div class="fixed top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none z-0"></div>
+  <div class="fixed bottom-1/4 right-1/4 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl animate-pulse-slow pointer-events-none z-0" style="animation-delay: -3s;"></div>
+
+  <!-- HEADER -->
+  <header class="relative z-10 border-b border-slate-900 bg-slate-950/80 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3 shrink-0">
+    <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+      <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-rose-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+        <i data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5 text-white"></i>
+      </div>
+      <div class="min-w-0">
+        <h1 class="font-display font-bold text-base sm:text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-slate-100 to-rose-200 truncate" id="header-title">
+          TruthVerse AI
+        </h1>
+        <p class="hidden sm:block text-[10px] sm:text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5 truncate" id="header-subtitle">
+          Futuristic Real-Time Truth or Dare Game Engine
+        </p>
+      </div>
+    </div>
+
+    <!-- Active Mode & Controls Indicator -->
+    <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900 border border-slate-800 rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs text-slate-400">
+        <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="header-status" class="whitespace-nowrap">Python Engine Live</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN PLAYGROUND -->
+  <main class="relative z-10 flex-1 px-4 sm:px-6 py-6 sm:py-8 flex flex-col max-w-7xl mx-auto w-full">
+
+    <!-- PLAY SYSTEM SELECTOR (Hands-Free vs Manual Play Selection) -->
+    <div class="mb-6 sm:mb-8 bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 max-w-4xl mx-auto w-full shadow-lg relative overflow-hidden">
+      <!-- Glow decoration -->
+      <div id="mode-glow-effect" class="absolute -top-12 -left-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none transition-all"></div>
+      
+      <div class="flex items-center gap-3 sm:gap-3.5 relative z-10 w-full md:w-auto">
+        <div id="mode-icon-container" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-center text-indigo-400 transition-colors shrink-0">
+          <i data-lucide="mouse-pointer" id="play-mode-icon" class="w-4.5 h-4.5 sm:w-5 sm:h-5"></i>
+        </div>
+        <div class="min-w-0">
+          <h4 class="text-[9px] sm:text-[10px] font-mono text-indigo-400 uppercase tracking-widest font-bold">GAME PLAY SYSTEM</h4>
+          <p class="text-xs sm:text-sm font-bold text-slate-200 mt-0.5 truncate" id="current-mode-status">Manual Controller Active</p>
+          <p class="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate" id="current-mode-description">Play using mouse clicks and buttons manually</p>
+        </div>
+      </div>
+      
+      <!-- Segmented Select Buttons -->
+      <div class="flex bg-slate-950 p-1 sm:p-1.5 rounded-xl border border-slate-800/80 w-full md:w-auto relative z-10 gap-1 shrink-0">
+        <button onclick="setPlayMode('manual')" id="mode-btn-manual" class="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-lg shadow-indigo-600/10 focus:outline-none">
+          <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          Manual Play
+        </button>
+        <button onclick="setPlayMode('voice')" id="mode-btn-voice" class="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 focus:outline-none">
+          <i data-lucide="mic" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          Hands-Free Voice
+        </button>
+      </div>
+    </div>
+
+    <!-- SETUP VIEW -->
+    <div id="view-setup" class="flex-1 flex flex-col lg:flex-row gap-8 items-stretch justify-center">
+      <!-- Setup controls (left) -->
+      <div class="flex-1 bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-6 lg:p-8 flex flex-col shadow-2xl justify-between">
+        <div>
+          <h2 class="font-display font-semibold text-2xl mb-2 text-indigo-300 flex items-center gap-2" id="setup-title">
+            <i data-lucide="users" class="w-6 h-6 text-indigo-400"></i> Configure Your Squad
+          </h2>
+          <p class="text-slate-400 text-sm mb-6" id="setup-subtitle">
+            Gather your crew, spin the celestial wheel, and face AI-customized cosmic challenges!
+          </p>
+
+          <!-- Player Add Input -->
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2" id="label-add-member">
+              Add Players to Squad
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="player-input" placeholder="Enter player name..." class="flex-1 bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:outline-none rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 transition-colors font-medium">
+              <button onclick="addPlayerFromInput()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-indigo-600/20 active:scale-[0.98] transition-transform flex items-center gap-2">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                <span class="hidden sm:inline" id="btn-add-member">ADD MEMBER</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Roster List -->
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" id="label-squad-roster">Squad Roster</span>
+              <span id="player-count" class="text-xs bg-indigo-950 border border-indigo-900 text-indigo-300 font-mono px-2 py-0.5 rounded-full">2 Players</span>
+            </div>
+            <div id="setup-players-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-52 overflow-y-auto pr-1">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Options Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <!-- Category Selection -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2" id="label-category">
+                Select Game Category
+              </label>
+              <select id="select-category" class="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:outline-none rounded-xl px-3 py-2.5 text-sm text-slate-100 transition-colors font-medium">
+                <option value="Friends">Friends</option>
+                <option value="Kids (7-12)">Kids (7-12)</option>
+                <option value="Teens (13-17)">Teens (13-17)</option>
+                <option value="Young Adults (18-35)">Young Adults (18-35)</option>
+                <option value="Family">Family</option>
+                <option value="Office">Office</option>
+                <option value="Party">Party</option>
+                <option value="Festival">Festival</option>
+              </select>
+            </div>
+
+            <!-- Target Language -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2" id="label-language">
+                Select Target Language
+              </label>
+              <select id="select-language" onchange="changeLanguage()" class="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:outline-none rounded-xl px-3 py-2.5 text-sm text-slate-100 transition-colors font-medium">
+                <option value="English">English</option>
+                <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                <option value="Hindi">Hindi (हिन्दी)</option>
+                <option value="Telugu">Telugu (తెలుగు)</option>
+                <option value="Tamil">Tamil (தமிழ்)</option>
+                <option value="Malayalam">Malayalam (മലയാളം)</option>
+                <option value="Marathi">Marathi (मराठी)</option>
+                <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                <option value="Bengali">Bengali (বাংলা)</option>
+                <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                <option value="Odia">Odia (ଓଡ଼ିଆ)</option>
+              </select>
+            </div>
+
+            <!-- Difficulty Level -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2" id="label-difficulty">
+                Select Challenge Difficulty
+              </label>
+              <select id="select-difficulty" class="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:outline-none rounded-xl px-3 py-2.5 text-sm text-slate-100 transition-colors font-medium">
+                <option value="Easy">Easy</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="startGame()" class="w-full bg-gradient-to-r from-indigo-600 to-rose-600 hover:from-indigo-500 hover:to-rose-500 text-white font-bold font-display tracking-wide rounded-xl py-4 shadow-xl shadow-indigo-600/10 active:scale-[0.99] transition-all flex items-center justify-center gap-3 mt-4 text-base" id="btn-enter-playground">
+          ENTER PLAYGROUND 🚀
+        </button>
+      </div>
+
+      <!-- Live Leaderboard/Prestige Card (right) -->
+      <div class="w-full lg:w-80 bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-2xl p-6 flex flex-col justify-between">
+        <div>
+          <h3 class="font-display font-semibold text-lg text-slate-300 flex items-center gap-2 mb-4" id="label-prestige">
+            <i data-lucide="award" class="w-5 h-5 text-amber-400"></i> Prestige Records
+          </h3>
+          <div class="space-y-4">
+            <div class="p-4 bg-slate-950/60 rounded-xl border border-slate-900 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider" id="prestige-top-player-label">Top Champion</p>
+                <p class="text-sm font-semibold text-slate-200" id="prestige-top-player">Chethan</p>
+              </div>
+            </div>
+
+            <div class="p-4 bg-slate-950/60 rounded-xl border border-slate-900 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
+                <i data-lucide="clock" class="w-5 h-5 text-rose-400"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider" id="prestige-streak-label">Longest Streak</p>
+                <p class="text-sm font-semibold text-slate-200" id="streak-val-label">5 Challenges</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 p-4 bg-indigo-950/30 border border-indigo-900/30 rounded-xl">
+          <p class="text-xs text-indigo-300 font-semibold mb-1 flex items-center gap-1.5" id="protip-header">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> PRO TIP
+          </p>
+          <p class="text-[11px] text-slate-400 leading-relaxed" id="protip-text">
+            Activate hands-free speech controller in the active playground to complete chores, run scans, or skip prompts using just voice commands!
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- LOBBY / SPIN WHEEL VIEW -->
+    <div id="view-lobby" class="hidden flex-1 flex flex-col md:flex-row gap-8 items-center justify-center max-w-4xl mx-auto w-full">
+      <!-- Spinning Wheel Panel (left) -->
+      <div class="flex-1 flex flex-col items-center">
+        <h2 class="font-display font-semibold text-xl text-slate-300 text-center mb-6" id="wheel-title">
+          Who's Up Next? Spin the Celestial Wheel!
+        </h2>
+
+        <!-- Wheel Canvas Wrapper -->
+        <div class="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 wheel-pointer flex items-center justify-center bg-slate-950 rounded-full border-4 border-slate-800 shadow-2xl p-2 select-none">
+          <canvas id="wheel-canvas" width="380" height="380" class="w-full h-full rounded-full transition-transform ease-out" style="transform: rotate(0deg);"></canvas>
+          
+          <!-- Outer decorative bezel ring -->
+          <div class="absolute inset-0 rounded-full border border-indigo-500/10 pointer-events-none"></div>
+
+          <!-- Wheel Center Pin Button -->
+          <button onclick="spinWheel()" id="spin-btn" class="absolute w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-b from-indigo-600 to-indigo-800 hover:from-indigo-500 hover:to-indigo-700 border-4 border-slate-900 rounded-full shadow-2xl flex flex-col items-center justify-center text-white font-bold font-display text-xs z-20 cursor-pointer active:scale-95 transition-transform tracking-wider">
+            <span>SPIN</span>
+            <span class="text-[9px] text-indigo-200 mt-0.5">WHEEL</span>
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-500 font-semibold mt-6 tracking-wide text-center uppercase" id="wheel-tip">
+          Click the core button or say "Spin" to select a random challenger
+        </p>
+      </div>
+
+      <!-- Squad Leaderboard & Quick Actions (right) -->
+      <div class="w-full md:w-80 bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-6 shadow-2xl flex flex-col self-stretch justify-between">
+        <div>
+          <h3 class="font-display font-semibold text-base text-slate-300 border-b border-slate-800 pb-3 mb-4 flex items-center gap-2" id="scoreboard-title">
+            <i data-lucide="award" class="w-5 h-5 text-amber-500"></i> Squad Scoreboard
+          </h3>
+          <div id="lobby-scoreboard-container" class="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+            <!-- Dynamically populated scoreboard list -->
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-slate-800 mt-6 flex gap-2">
+          <button onclick="navigateSetup()" class="flex-1 border border-slate-800 hover:border-slate-700 hover:bg-slate-950 text-slate-400 hover:text-slate-200 font-semibold text-xs rounded-xl py-3 transition-all flex items-center justify-center gap-2">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            <span id="btn-back-setup">Back to Setup</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ACTIVE CHALLENGE VIEW -->
+    <div id="view-challenge" class="hidden flex-1 flex flex-col lg:flex-row gap-6 items-stretch">
+      
+      <!-- Primary Challenge Interactive Panel (Left) -->
+      <div class="flex-1 bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-6 lg:p-8 flex flex-col shadow-2xl justify-between relative overflow-hidden">
+        
+        <!-- Interactive Canvas Background for Live Animations -->
+        <div class="absolute inset-0 z-0 pointer-events-none opacity-40">
+          <canvas id="animation-canvas" class="w-full h-full"></canvas>
+        </div>
+
+        <!-- Mode Select Overlays (Visible only before prompt loads) -->
+        <div id="challenge-mode-selection" class="relative z-10 flex-1 flex flex-col items-center justify-center text-center py-12">
+          <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-4 animate-float">
+            <i data-lucide="sparkles" class="w-8 h-8 text-indigo-400"></i>
+          </div>
+          <h2 class="font-display font-bold text-2xl mb-1 text-slate-200">
+            <span id="active-player-highlight" class="text-indigo-400">Chethan</span>, <span id="choose-fate-title">Choose Your Fate!</span>
+          </h2>
+          <p class="text-sm text-slate-500 mb-8 max-w-sm" id="fate-tip">
+            Will you speak the absolute, raw truth, or tackle a cosmic AI-generated action dare?
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md px-4">
+            <button onclick="requestChallenge('Truth')" class="flex-1 bg-slate-950 hover:bg-indigo-950/30 border border-indigo-900/50 hover:border-indigo-500 text-indigo-300 font-bold font-display py-4 px-6 rounded-xl shadow-lg hover:shadow-indigo-500/5 active:scale-[0.98] transition-all flex flex-col items-center gap-1">
+              <span class="text-base tracking-wide" id="btn-select-truth">SELECT TRUTH 🔮</span>
+              <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider" id="desc-truth-points">10 - 30 Points</span>
+            </button>
+            <button onclick="requestChallenge('Dare')" class="flex-1 bg-slate-950 hover:bg-rose-950/30 border border-rose-900/50 hover:border-rose-500 text-rose-300 font-bold font-display py-4 px-6 rounded-xl shadow-lg hover:shadow-rose-500/5 active:scale-[0.98] transition-all flex flex-col items-center gap-1">
+              <span class="text-base tracking-wide" id="btn-select-dare">SELECT DARE 🔥</span>
+              <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider" id="desc-dare-points">Camera + Mini-Games</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Challenge Panel (Visible when challenge is loaded) -->
+        <div id="challenge-active-panel" class="hidden relative z-10 flex-1 flex flex-col justify-between">
+          
+          <!-- Top Header Line (Timer, Mode badge, Speaker trigger) -->
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-4 mb-6">
+            <!-- Mode Badges -->
+            <div class="flex items-center gap-2">
+              <span id="badge-mode" class="bg-indigo-950 border border-indigo-900 text-indigo-300 font-display font-semibold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                TRUTH
+              </span>
+              <span id="badge-difficulty" class="bg-slate-950 border border-slate-800 text-slate-400 font-mono text-xs px-2.5 py-1 rounded-full uppercase">
+                MEDIUM
+              </span>
+            </div>
+
+            <!-- Ticking Timer -->
+            <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 px-3.5 py-1.5 rounded-full font-mono text-xs font-semibold text-rose-400">
+              <i data-lucide="clock" class="w-4 h-4 text-rose-400 animate-pulse"></i>
+              <span id="challenge-timer">45s</span>
+            </div>
+          </div>
+
+          <!-- Challenge Card Core Content -->
+          <div class="flex-1 flex flex-col justify-center my-6">
+            <h3 class="text-sm font-mono text-indigo-400 font-semibold tracking-wider uppercase mb-1" id="label-challenge-title">
+              Spark of Truth
+            </h3>
+            <h4 class="font-display font-bold text-xl sm:text-2xl md:text-3xl text-slate-100 tracking-tight leading-snug mb-4" id="challenge-prompt-text">
+              "If you were a vegetable, which one would you be?"
+            </h4>
+            
+            <!-- Funny Hint -->
+            <div class="flex items-start gap-2.5 p-3.5 bg-slate-950/60 rounded-xl border border-slate-900 mb-6">
+              <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5"></i>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                <strong class="text-slate-300" id="label-hint">Protip / Hint:</strong> 
+                <span id="challenge-hint-text">Be honest and speak clearly so everyone can hear you!</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Voice Suggestions & Quick Read out -->
+          <div class="mb-6 flex flex-wrap gap-2 items-center">
+            <button onclick="readAloudChallenge()" class="flex items-center gap-1.5 text-xs bg-indigo-950/40 hover:bg-indigo-900/40 border border-indigo-900/40 text-indigo-300 font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition-all">
+              <i data-lucide="volume2" class="w-3.5 h-3.5"></i>
+              <span id="btn-read-aloud">READ ALOUD</span>
+            </button>
+            <span class="text-[11px] text-slate-500 font-semibold font-mono uppercase ml-2" id="label-voice-tips">Voice Prompts:</span>
+            <div id="voice-suggestions-list" class="flex flex-wrap gap-1.5">
+              <!-- Dynamically populated with chips -->
+            </div>
+          </div>
+
+          <!-- Bottom controls (Submit, pass) -->
+          <div class="border-t border-slate-800/80 pt-5 flex flex-col sm:flex-row gap-3">
+            <button onclick="passTurn()" class="border border-slate-800 hover:border-slate-700 hover:bg-slate-950 text-slate-400 hover:text-slate-200 font-semibold rounded-xl px-6 py-3.5 transition-all flex items-center justify-center gap-2">
+              <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+              <span id="btn-pass-turn">Pass Turn</span>
+            </button>
+            
+            <button onclick="completeChallenge()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold tracking-wide rounded-xl py-3.5 shadow-lg shadow-emerald-600/10 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+              <span id="btn-mark-completed">MARK COMPLETED & ACCUMULATE SCORE</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- LOADING OVERLAY -->
+        <div id="challenge-loading-overlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center text-center p-6">
+          <div class="w-14 h-14 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin mb-4"></div>
+          <h3 class="font-display font-semibold text-lg text-indigo-300 mb-1" id="loader-title">Synthesizing AI Engine Package...</h3>
+          <p class="text-xs text-slate-500 max-w-xs" id="loader-desc">Structuring safe multi-language JSON questions, drafting HTML5 custom canvas scripts, and spawning rewards.</p>
+        </div>
+
+      </div>
+
+      <!-- Right Panels (Voice assistant & interactive widgets: camera/games) -->
+      <div class="w-full lg:w-96 flex flex-col gap-5 shrink-0">
+
+        <!-- AI Illustration Generator widget -->
+        <div id="widget-illustration" class="bg-slate-900/50 backdrop-blur-md border border-slate-800/60 rounded-2xl p-5 flex flex-col">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-display font-semibold text-sm text-slate-300 flex items-center gap-2" id="label-illustration-header">
+              <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i> AI Illustration Generator
+            </h3>
+            <span class="text-[10px] font-mono text-slate-500 font-bold uppercase" id="badge-illustrations">Gemini Art</span>
+          </div>
+          <!-- Art Frame -->
+          <div class="relative w-full aspect-square bg-slate-950 rounded-xl overflow-hidden border border-slate-900 flex items-center justify-center">
+            <!-- Loader -->
+            <div id="illustration-loader" class="hidden absolute inset-0 bg-slate-950/80 z-10 flex flex-col items-center justify-center text-center p-4">
+              <div class="w-8 h-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin mb-2"></div>
+              <p class="text-[10px] text-slate-400">Rendering Scene Graphic...</p>
+            </div>
+            
+            <!-- Target Image -->
+            <img id="illustration-img" src="" alt="AI Challenge Graphic" class="w-full h-full object-cover select-none pointer-events-none" referrerPolicy="no-referrer">
+            <div id="illustration-placeholder" class="text-slate-700 flex flex-col items-center justify-center p-4 text-center">
+              <i data-lucide="video" class="w-10 h-10 mb-2 opacity-35"></i>
+              <p class="text-xs">Artwork generated on-the-fly for loaded prompts</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CAMERA VERIFICATION & ARCADE MINI-GAME WIDGET (Dares only) -->
+        <div id="widget-arcade" class="hidden bg-slate-900/50 backdrop-blur-md border border-slate-800/60 rounded-2xl p-5 flex flex-col">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-display font-semibold text-sm text-slate-300 flex items-center gap-2">
+              <i data-lucide="video" class="w-4 h-4 text-rose-400"></i> <span id="label-arcade-header">Dare Interactive Console</span>
+            </h3>
+            <span class="text-[10px] bg-rose-950/40 border border-rose-900 text-rose-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider font-mono">BONUS +10</span>
+          </div>
+
+          <!-- Tabs to switch between camera and game -->
+          <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-lg mb-3 text-xs font-semibold">
+            <button onclick="switchArcadeTab('camera')" id="tab-btn-camera" class="bg-slate-900 text-indigo-300 border border-slate-800 py-1.5 rounded-md flex items-center justify-center gap-1.5">
+              <i data-lucide="video" class="w-3.5 h-3.5"></i> Camera Scanner
+            </button>
+            <button onclick="switchArcadeTab('game')" id="tab-btn-game" class="text-slate-500 hover:text-slate-300 py-1.5 rounded-md flex items-center justify-center gap-1.5">
+              <i data-lucide="play" class="w-3.5 h-3.5"></i> Arcade Game
+            </button>
+          </div>
+
+          <!-- Camera Screen Wrapper -->
+          <div id="arcade-camera-view" class="relative aspect-video bg-slate-950 rounded-xl overflow-hidden border border-slate-900 flex flex-col items-center justify-center">
+            <!-- Simulated Camera Feed -->
+            <video id="webcam-feed" class="absolute inset-0 w-full h-full object-cover opacity-60 hidden" autoplay playsinline></video>
+            
+            <div id="webcam-fallback" class="absolute inset-0 bg-gradient-to-tr from-slate-950 to-indigo-950 flex flex-col items-center justify-center text-center p-4">
+              <i data-lucide="video" class="w-8 h-8 text-indigo-400 mb-2 animate-pulse"></i>
+              <p class="text-xs text-indigo-300 font-semibold uppercase tracking-wider mb-0.5" id="label-scans">Scanning Space...</p>
+              <p class="text-[10px] text-slate-500 leading-relaxed max-w-[180px]">Grant camera permission for live scanner or run holographic simulation below</p>
+            </div>
+
+            <!-- Scanner grid line -->
+            <div class="absolute inset-x-0 h-0.5 bg-indigo-500/40 shadow-lg shadow-indigo-500/50 pointer-events-none animate-scan z-10"></div>
+
+            <!-- Overlay HUD -->
+            <div class="absolute bottom-3 inset-x-3 bg-slate-950/80 backdrop-blur border border-slate-800/80 p-2.5 rounded-lg flex items-center justify-between z-20">
+              <div class="flex-1 min-w-0 pr-2">
+                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider" id="label-pose-goal">Pose Goal</p>
+                <p id="pose-goal-text" class="text-[11px] font-semibold text-slate-200 truncate uppercase tracking-wide">Smiling</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">CONFIDENCE</p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <div class="w-12 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                    <div id="pose-confidence-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 25%;"></div>
+                  </div>
+                  <span id="pose-confidence-text" class="text-[10px] font-mono font-bold text-emerald-400">25%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mini Game Console Screen Wrapper -->
+          <div id="arcade-game-view" class="hidden relative aspect-video bg-slate-950 rounded-xl overflow-hidden border border-slate-900 flex flex-col items-center justify-center">
+            <canvas id="mini-game-canvas" class="absolute inset-0 w-full h-full cursor-pointer z-10"></canvas>
+            
+            <div id="mini-game-intro" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center text-center p-4 z-20">
+              <i data-lucide="play" class="w-8 h-8 text-rose-500 mb-2 animate-bounce"></i>
+              <p id="game-title-text" class="text-xs text-rose-400 font-bold uppercase tracking-wider mb-1">Burst Balloons</p>
+              <p id="game-instructions-text" class="text-[10px] text-slate-500 max-w-[200px] leading-relaxed mb-3">Tap or click the moving objects to burst them and earn bonus points!</p>
+              <button onclick="startMiniGame()" class="bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-lg active:scale-95 transition-all">
+                START ARCADE CONSOLE
+              </button>
+            </div>
+
+            <!-- Score / Scoreboard indicator -->
+            <div id="game-score-badge" class="hidden absolute top-2 right-2 bg-rose-950/80 border border-rose-900 text-rose-300 font-mono text-[10px] font-bold px-2 py-1 rounded-md z-20 flex items-center gap-1">
+              SCORE: <span id="game-score-val">0</span>
+            </div>
+            
+            <!-- Game countdown timer badge -->
+            <div id="game-timer-badge" class="hidden absolute top-2 left-2 bg-slate-950/80 border border-slate-800 text-slate-400 font-mono text-[10px] font-bold px-2 py-1 rounded-md z-20 flex items-center gap-1">
+              TIME: <span id="game-timer-val">15</span>
+            </div>
+          </div>
+
+          <!-- Interaction Action Buttons -->
+          <div class="mt-3 flex gap-2">
+            <button onclick="verifyPostures()" id="verify-scan-btn" class="flex-1 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 hover:border-indigo-500 text-indigo-300 text-xs font-bold py-2.5 rounded-xl transition-all uppercase tracking-wide flex items-center justify-center gap-1.5">
+              <i data-lucide="video" class="w-4 h-4"></i> Scan Posture
+            </button>
+            <button onclick="skipScan()" class="border border-slate-800 hover:border-slate-700 text-slate-500 hover:text-slate-300 text-xs font-semibold px-4 rounded-xl transition-colors" id="btn-skip-scan">
+              Skip
+            </button>
+          </div>
+        </div>
+
+        <!-- SPEECH ASSISTANT HUD -->
+        <div class="bg-slate-900/50 backdrop-blur-md border border-slate-800/60 rounded-2xl p-5 flex flex-col gap-3">
+          <div class="flex justify-between items-center">
+            <h3 class="font-display font-semibold text-sm text-slate-300 flex items-center gap-2" id="label-assistant-header">
+              <i data-lucide="mic" class="w-4 h-4 text-emerald-400 animate-pulse"></i> AI VOICE ASSISTANT
+            </h3>
+            <div class="flex items-center gap-2 bg-slate-950 px-2 py-1 rounded-md border border-slate-900">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-700" id="speech-dot"></span>
+              <span id="speech-status-text" class="text-[9px] font-mono text-slate-500 uppercase tracking-wider">Voice Control Dormant</span>
+            </div>
+          </div>
+
+          <!-- Highlighted Voice Toggle Button for easy accessibility -->
+          <button onclick="toggleVoiceListening()" id="voice-indicator" class="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-semibold text-xs uppercase tracking-wide transition-all cursor-pointer select-none active:scale-[0.98] focus:outline-none">
+            <i data-lucide="mic" id="voice-mic-icon" class="w-4 h-4 text-emerald-500"></i>
+            <span id="voice-btn-label">Enable Hands-Free Microphone</span>
+          </button>
+
+          <div class="bg-slate-950 rounded-xl p-3.5 border border-slate-900 flex flex-col justify-center min-h-[50px] relative overflow-hidden">
+            <!-- Listening Pulse bar -->
+            <div id="listening-wave" class="hidden absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-500 opacity-60 animate-pulse"></div>
+            
+            <p id="speech-subtitle-text" class="text-xs text-slate-500 italic">
+              Say "Spin", "Truth", "Dare", "Complete", or any customized challenge suggestion...
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="relative z-10 border-t border-slate-900 bg-slate-950/40 py-4 text-center">
+    <p class="text-[11px] text-slate-600 font-medium tracking-wide">
+      TRUTHVERSE AI PLATFORM &bull; POWERED BY PURE PYTHON FLASK & GOOGLE GEMINI PRO
+    </p>
+  </footer>
+
+  <!-- Lucide Icon script -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Core Javascript Game Engine Logic -->
+  <script>
+    // Embed the complete language translation set natively
+    const TRANSLATIONS = {
+      English: {
+        title: "TruthVerse AI",
+        subtitle: "Futuristic Real-Time Truth or Dare Game Engine",
+        addPlayersHeader: "Configure Your Squad",
+        enterNamePlaceholder: "Enter player name...",
+        addSquadBtn: "ADD MEMBER",
+        selectCategoryHeader: "Select Game Category",
+        selectLanguageHeader: "Select Target Language",
+        selectDifficultyHeader: "Select Challenge Difficulty",
+        enterPlaygroundBtn: "ENTER PLAYGROUND",
+        selectTruthBtn: "SELECT TRUTH 🔮",
+        selectDareBtn: "SELECT DARE 🔥",
+        passTurnBtn: "Pass Turn",
+        markCompletedBtn: "MARK COMPLETED & ACCUMULATE SCORE",
+        trySayingLabel: "Try saying:",
+        difficultyEasy: "Easy",
+        difficultyMedium: "Medium",
+        difficultyHard: "Hard",
+        poseGoalLabel: "Pose Goal",
+        confidenceLabel: "CONFIDENCE",
+        poseVerifiedBtn: "POSE VERIFIED! CLAIM BONUS",
+        turnLabel: "turn",
+        protipLabel: "Protip / Hint",
+        baseRewardLabel: "Base Reward",
+        listeningState: "Listening...",
+        backSetupBtn: "Back to Setup",
+        wheelTitle: "Who's Up Next? Spin the Celestial Wheel!",
+        spinBtnText: "SPIN",
+        spinBtnSubText: "WHEEL",
+        wheelTip: "Click the core button or say 'Spin' to select a random challenger",
+        scoreboardTitle: "Squad Scoreboard",
+        chooseFateTitle: "Choose Your Fate!",
+        fateTip: "Will you speak the absolute, raw truth, or tackle a cosmic AI-generated action dare?",
+        readAloudBtn: "READ ALOUD",
+        voiceTipsLabel: "Voice Prompts:",
+        illustrationHeader: "AI Illustration Generator",
+        geminiArtBadge: "Gemini Art",
+        illustrationPlaceholder: "Artwork generated on-the-fly for loaded prompts",
+        interactiveConsoleHeader: "Dare Interactive Console",
+        cameraScannerTab: "Camera Scanner",
+        arcadeGameTab: "Arcade Game",
+        scanningSpaceLabel: "Scanning Space...",
+        scanPostureBtn: "Scan Posture",
+        skipBtn: "Skip",
+        voiceAssistantHeader: "AI VOICE ASSISTANT",
+        prestigeRecordsHeader: "Prestige Records",
+        topChampionLabel: "Top Champion",
+        longestStreakLabel: "Longest Streak",
+        streakCountText: "5 Challenges",
+        descTruthPoints: "10 - 30 Points",
+        descDarePoints: "Camera + Mini-Games"
+      },
+      Kannada: {
+        title: "ಟ್ರೂತ್‌ವರ್ಸ್ AI",
+        subtitle: "ಭವಿಷ್ಯದ ರಿಯಲ್-ಟೈಮ್ ಸತ್ಯ ಅಥವಾ ಧೈರ್ಯ ಆಟದ ಎಂಜಿನ್",
+        addPlayersHeader: "ತಂಡಕ್ಕೆ ಆಟಗಾರರನ್ನು ಸೇರಿಸಿ",
+        enterNamePlaceholder: "ಆಟಗಾರನ ಹೆಸರು ಬರೆಯಿರಿ...",
+        addSquadBtn: "ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ",
+        selectCategoryHeader: "ಆಟದ ವರ್ಗವನ್ನು ಆರಿಸಿ",
+        selectLanguageHeader: "ಭಾಷೆಯನ್ನು ಆರಿಸಿ",
+        selectDifficultyHeader: "ಆಟದ ಕಠಿಣತೆಯನ್ನು ಆರಿಸಿ",
+        enterPlaygroundBtn: "ಆಟದ ಮೈದಾನಕ್ಕೆ ಪ್ರವೇಶಿಸಿ",
+        selectTruthBtn: "ಸತ್ಯವನ್ನು ಆರಿಸಿ 🔮",
+        selectDareBtn: "ಧೈರ್ಯವನ್ನು ಆರಿಸಿ 🔥",
+        passTurnBtn: "ಮುಂದಿನವರಿಗೆ ಬಿಡಿ",
+        markCompletedBtn: "ಪೂರ್ಣಗೊಂಡಿದೆ ಎಂದು ಗುರುತಿಸಿ ಮತ್ತು ಅಂಕಗಳನ್ನು ಗಳಿಸಿ",
+        trySayingLabel: "ಹೇಳಿ ನೋಡಿ:",
+        difficultyEasy: "ಸುಲಭ",
+        difficultyMedium: "ಮಧ್ಯಮ",
+        difficultyHard: "ಕಠಿಣ",
+        poseGoalLabel: "ಭಂಗಿ ಗುರಿ",
+        confidenceLabel: "ಖಚಿತತೆ",
+        poseVerifiedBtn: "ಭಂಗಿ ದೃಢೀಕರಿಸಲ್ಪಟ್ಟಿದೆ! ಬೋನಸ್ ಪಡೆಯಿರಿ",
+        turnLabel: "ಅವರ ಸರದಿ",
+        protipLabel: "ಸಲಹೆ / ಸುಳಿವು",
+        baseRewardLabel: "ಮೂಲ ಅಂಕ",
+        listeningState: "ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದೆ...",
+        backSetupBtn: "ಹೊಂದಿಕೆಗೆ ಹಿಂತಿರುಗಿ",
+        wheelTitle: "ಮುಂದೆ ಯಾರು? ಚಕ್ರವನ್ನು ತಿರುಗಿಸಿ!",
+        spinBtnText: "ತಿರುಗಿಸು",
+        spinBtnSubText: "ಚಕ್ರ",
+        wheelTip: "ತಿರುಗಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ ಅಥವಾ 'Spin' ಎಂದು ಹೇಳಿ",
+        scoreboardTitle: "ತಂಡದ ಸ್ಕೋರ್‌ಬೋರ್ಡ್",
+        chooseFateTitle: "ನಿಮ್ಮ ಹಣೆಬರಹವನ್ನು ಆರಿಸಿ!",
+        fateTip: "ಸತ್ಯವನ್ನು ಹೇಳುತ್ತೀರಾ ಅಥವಾ AI ನೀಡುವ ಧೈರ್ಯದ ಸವಾಲನ್ನು ಎದುರಿಸುತ್ತೀರಾ?",
+        readAloudBtn: "ಓದಿ ಹೇಳು",
+        voiceTipsLabel: "ಧ್ವನಿ ಪ್ರಾಂಪ್ಟ್‌ಗಳು:",
+        illustrationHeader: "AI ಚಿತ್ರ ಜನರೇಟರ್",
+        geminiArtBadge: "ಜೆಮಿನಿ ಕಲೆ",
+        illustrationPlaceholder: "ಸವಾಲುಗಳಿಗಾಗಿ ತಕ್ಷಣವೇ ರಚಿಸಲಾದ ಕಲಾಕೃತಿ",
+        interactiveConsoleHeader: "ಧೈರ್ಯದ ಸಂವಾದಾत्मक ಕನ್ಸೋಲ್",
+        cameraScannerTab: "ಕ್ಯಾಮೆರಾ ಸ್ಕ್ಯಾನರ್",
+        arcadeGameTab: "ಆರ್ಕೇಡ್ ಆಟ",
+        scanningSpaceLabel: "ಜಾಗವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+        scanPostureBtn: "ಭಂಗಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ",
+        skipBtn: "ಬಿಟ್ಟುಬಿಡಿ",
+        voiceAssistantHeader: "AI ಧ್ವನಿ ಸಹಾಯಕ",
+        prestigeRecordsHeader: "ಪ್ರತಿಷ್ಠೆಯ ದಾಖಲೆಗಳು",
+        topChampionLabel: "ಉನ್ನತ ಚಾಂಪಿಯನ್",
+        longestStreakLabel: "ದೀರ್ಘಾವಧಿಯ ಗೆಲುవు",
+        streakCountText: "೫ ಸವಾಲುಗಳು",
+        descTruthPoints: "೧೦ - ೩೦ ಅಂಕಗಳು",
+        descDarePoints: "ಕ್ಯಾಮೆರಾ + ಮಿನಿ ಆಟಗಳು"
+      },
+      Hindi: {
+        title: "ट्रुथवर्स AI",
+        subtitle: "भविष्य का रियल-टाइम सच या साहस गेम इंजन",
+        addPlayersHeader: "दस्ते में खिलाड़ियों को जोड़ें",
+        enterNamePlaceholder: "खिलाड़ी का नाम दर्ज करें...",
+        addSquadBtn: "सदस्य जोड़ें",
+        selectCategoryHeader: "खेल की श्रेणी चुनें",
+        selectLanguageHeader: "लक्षित भाषा चुनें",
+        selectDifficultyHeader: "चुनौती की कठिनाई चुनें",
+        enterPlaygroundBtn: "खेल के मैदान में प्रवेश करें",
+        selectTruthBtn: "सच चुनें 🔮",
+        selectDareBtn: "साहस चुनें 🔥",
+        passTurnBtn: "बारी छोड़ें",
+        markCompletedBtn: "पूर्ण चिह्नित करें और स्कोर जमा करें",
+        trySayingLabel: "बोल कर देखें:",
+        difficultyEasy: "आसान",
+        difficultyMedium: "मध्यम",
+        difficultyHard: "कठिन",
+        poseGoalLabel: "मुद्रा लक्ष्य",
+        confidenceLabel: "आत्मविश्वास",
+        poseVerifiedBtn: "मुद्रा सत्यापित! बोनस प्राप्त करें",
+        turnLabel: "की बारी",
+        protipLabel: "सलाह / संकेत",
+        baseRewardLabel: "बुनियादी इनाम",
+        listeningState: "सुन रहा है...",
+        backSetupBtn: "सेटअप पर वापस जाएं",
+        wheelTitle: "अगला कौन है? पहिया घुमाएं!",
+        spinBtnText: "घुमाओ",
+        spinBtnSubText: "पहिया",
+        wheelTip: "बटन दबाएं या 'Spin' बोलकर यादृच्छिक खिलाड़ी चुनें",
+        scoreboardTitle: "टीम स्कोरबोर्ड",
+        chooseFateTitle: "अपनी किस्मत चुनें!",
+        fateTip: "क्या आप पूरी सच्चाई बोलेंगे, या AI-जनित साहस चुनौती का सामना करेंगे?",
+        readAloudBtn: "ज़ोर से पढ़ें",
+        voiceTipsLabel: "आवाज सुझाव:",
+        illustrationHeader: "AI चित्र जनरेटर",
+        geminiArtBadge: "जेमिनी आर्ट",
+        illustrationPlaceholder: "चुनौतियों के लिए तत्काल जनरेट किया गया चित्र",
+        interactiveConsoleHeader: "साहस कंसोल",
+        cameraScannerTab: "कैमरा स्कैनर",
+        arcadeGameTab: "आर्केड गेम",
+        scanningSpaceLabel: "स्कैनिंग जारी है...",
+        scanPostureBtn: "मुद्रा स्कैन करें",
+        skipBtn: "छोड़ें",
+        voiceAssistantHeader: "AI आवाज सहायक",
+        prestigeRecordsHeader: "प्रतिष्ठा रिकॉर्ड",
+        topChampionLabel: "शीर्ष चैंपियन",
+        longestStreakLabel: "सबसे लंबा सिलसिला",
+        streakCountText: "5 चुनौतियां",
+        descTruthPoints: "10 - 30 अंक",
+        descDarePoints: "कैमरा + मिनी-गेम्स"
+      },
+      Telugu: {
+        title: "ట్రూత్‌వర్స్ AI",
+        subtitle: "భవిష్యత్ రియల్-టైమ్ నిజం లేదా ధైర్యం గేమ్ ఇంజిన్",
+        addPlayersHeader: "స్క్వాడ్‌లో ఆటగాళ్లను చేర్చండి",
+        enterNamePlaceholder: "ఆటగాడి పేరు రాయండి...",
+        addSquadBtn: "సభ్యుడిని చేర్చు",
+        selectCategoryHeader: "గేమ్ వర్గాన్ని ఎంచుకోండి",
+        selectLanguageHeader: "లక్ష్య భాషను ఎంచుకోండి",
+        selectDifficultyHeader: "సవాలు కఠినతను ఎంచుకోండి",
+        enterPlaygroundBtn: "ఆటస్థలంలోకి ప్రవేశించండి",
+        selectTruthBtn: "నిజం ఎంచుకోండి 🔮",
+        selectDareBtn: "ధైర్యం ఎంచుకోండి 🔥",
+        passTurnBtn: "అవకాశం వదులుకోండి",
+        markCompletedBtn: "పూర్తయినట్లు గుర్తుపెట్టి స్కోర్ సాధించండి",
+        trySayingLabel: "ఇలా చెప్పి చూడండి:",
+        difficultyEasy: "సులభం",
+        difficultyMedium: "మధ్యస్థం",
+        difficultyHard: "కఠినం",
+        poseGoalLabel: "భంగిమ లక్ష్యం",
+        confidenceLabel: "విశ్వసనీయత",
+        poseVerifiedBtn: "భంగిమ ధృవీకరించబడింది! బోనస్ పొందండి",
+        turnLabel: "వంతు",
+        protipLabel: "చిట్కా / హింట్",
+        baseRewardLabel: "ప్రాథమిక బహుమతి",
+        listeningState: "వింటున్నది...",
+        backSetupBtn: "సెటప్‌కు తిరిగి వెళ్ళు",
+        wheelTitle: "తదుపరి ఎవరు? చక్రం తిప్పండి!",
+        spinBtnText: "తిప్పు",
+        spinBtnSubText: "చక్రం",
+        wheelTip: "తిప్పడానికి బటన్ నొక్కండి లేదా 'Spin' అని చెప్పండి",
+        scoreboardTitle: "స్క్వాడ్ స్కోర్‌బోర్ด์",
+        chooseFateTitle: "మీ విధిని ఎంచుకోండి!",
+        fateTip: "మీరు నిజం చెబుతారా లేక AI సృష్టించిన సవాలును స్వీకరిస్తారా?",
+        readAloudBtn: "బిగ్గరగా చదవండి",
+        voiceTipsLabel: "వాయిస్ సూచనలు:",
+        illustrationHeader: "AI చిత్ర జనరేటర్",
+        geminiArtBadge: "జెమినీ ఆర్ట్",
+        illustrationPlaceholder: "సవాళ్ల కోసం తక్షణమే సృష్టించబడిన చిత్రం",
+        interactiveConsoleHeader: "ధైర్యం కన్సోల్",
+        cameraScannerTab: "కెమెరా స్కానర్",
+        arcadeGameTab: "ఆర్కేడ్ గేమ్",
+        scanningSpaceLabel: "స్థలాన్ని స్కాన్ చేస్తోంది...",
+        scanPostureBtn: "భంగిమ స్కాన్",
+        skipBtn: "దాటవేయి",
+        voiceAssistantHeader: "AI వాయిస్ అసిస్టెంట్",
+        prestigeRecordsHeader: "కీర్తి రికార్డులు",
+        topChampionLabel: "అగ్ర విజేత",
+        longestStreakLabel: "అत्यधिक విజయాలు",
+        streakCountText: "5 సవాళ్లు",
+        descTruthPoints: "10 - 30 పాయింట్లు",
+        descDarePoints: "కెమెరా + మినీ-గేమ్స్"
+      },
+      Tamil: {
+        title: "ட்ரூத்வெர்ஸ் AI",
+        subtitle: "எதிர்கால நிகழ்நேர உண்மை அல்லது தைரியம் விளையாட்டு இயந்திரம்",
+        addPlayersHeader: "குழுவில் வீரர்களைச் சேர்க்கவும்",
+        enterNamePlaceholder: "வீரரின் பெயரை உள்ளிடவும்...",
+        addSquadBtn: "உறுப்பினரைச் சேர்",
+        selectCategoryHeader: "விளையாட்டு வகையைத் தேர்ந்தெடுக்கவும்",
+        selectLanguageHeader: "மொழியைத் தேர்ந்தெடுக்கவும்",
+        selectDifficultyHeader: "சவாலின் கடினத்தன்மையைத் தேர்ந்தெடுக்கவும்",
+        enterPlaygroundBtn: "விளையாட்டு மைதானத்திற்குள் நுழையுங்கள்",
+        selectTruthBtn: "உண்மையைத் தேர்ந்தெடு 🔮",
+        selectDareBtn: "தைரியத்தைத் தேர்ந்தெடு 🔥",
+        passTurnBtn: "வாய்ப்பை விட்டுக்கொடு",
+        markCompletedBtn: "முடிந்தது என குறியிட்டு மதிப்பெண் பெறுங்கள்",
+        trySayingLabel: "முயற்சி செய்து சொல்லுங்கள்:",
+        difficultyEasy: "எளிது",
+        difficultyMedium: "நடுத்தரம்",
+        difficultyHard: "கடினம்",
+        poseGoalLabel: "தோரணை இலக்கு",
+        confidenceLabel: "நம்பிக்கை",
+        poseVerifiedBtn: "தோரணை சரிபார்க்கப்பட்டது! போனஸ் பெறுங்கள்",
+        turnLabel: "இன் முறை",
+        protipLabel: "உதவிக்குறிப்பு / குறிப்பு",
+        baseRewardLabel: "அடிப்படை வெகுமதி",
+        listeningState: "கேட்கிறது...",
+        backSetupBtn: "அமைப்பிற்குத் திரும்பு",
+        wheelTitle: "அடுத்து யார்? சக்கரத்தை சுழற்றுங்கள்!",
+        spinBtnText: "சுழற்று",
+        spinBtnSubText: "சக்கரம்",
+        wheelTip: "சுழற்ற கிளிக் செய்யவும் அல்லது 'Spin' என்று சொல்லவும்",
+        scoreboardTitle: "குழு மதிப்பெண் பலகை",
+        chooseFateTitle: "உங்கள் விதியைத் தேர்ந்தெடுங்கள்!",
+        fateTip: "உண்மையை பேசுவீர்களா அல்லது AI உருவாக்கிய தைரிய சவாலை ஏற்பீர்களா?",
+        readAloudBtn: "உரக்கப் படி",
+        voiceTipsLabel: "குரல் பரிந்துரைகள்:",
+        illustrationHeader: "AI சித்திர உருவாக்கி",
+        geminiArtBadge: "ஜெமினி ஆர்ட்",
+        illustrationPlaceholder: "சவால்களுக்காக உடனுக்குடன் உருவாக்கப்பட்ட படம்",
+        interactiveConsoleHeader: "தைரிய சவால் கட்டுப்பாட்டு பலகை",
+        cameraScannerTab: "கேமரா ஸ்கேனர்",
+        arcadeGameTab: "ஆர்கேட் விளையாட்டு",
+        scanningSpaceLabel: "இடத்தை ஸ்கேன் செய்கிறது...",
+        scanPostureBtn: "தோரணையை ஸ்கேன் செய்",
+        skipBtn: "தவிர்",
+        voiceAssistantHeader: "AI குரல் உதவியாளர்",
+        prestigeRecordsHeader: "மதிப்புமிக்க சாதனைகள்",
+        topChampionLabel: "சிறந்த வெற்றியாளர்",
+        longestStreakLabel: "நீண்ட தொடர் வெற்றி",
+        streakCountText: "5 சவால்கள்",
+        descTruthPoints: "10 - 30 புள்ளிகள்",
+        descDarePoints: "கேமரா + மினி-கேம்கள்"
+      },
+      Malayalam: {
+        title: "ട്രൂത്ത്‌വേഴ്സ് AI",
+        subtitle: "ഭാവിയിലെ തത്സമയ സത്യം അല്ലെങ്കിൽ ധൈര്യം ഗെയിം എഞ്ചിൻ",
+        addPlayersHeader: "കളിക്കാരെ ടീമിലേക്ക് ചേർക്കുക",
+        enterNamePlaceholder: "കളിക്കാരന്റെ പേര് നൽകുക...",
+        addSquadBtn: "അംഗത്തെ ചേർക്കുക",
+        selectCategoryHeader: "ഗെയിം വിഭാഗം തിരഞ്ഞെടുക്കുക",
+        selectLanguageHeader: "ഭാഷ തിരഞ്ഞെടുക്കുക",
+        selectDifficultyHeader: "ബുദ്ധിമുട്ട് നില തിരഞ്ഞെടുക്കുക",
+        enterPlaygroundBtn: "കളിക്കളത്തിലേക്ക് പ്രവേശിക്കുക",
+        selectTruthBtn: "സത്യം തിരഞ്ഞെടുക്കുക 🔮",
+        selectDareBtn: "ധൈര്യം തിരഞ്ഞെടുക്കുക 🔥",
+        passTurnBtn: "അവസരം വിടുക",
+        markCompletedBtn: "പൂർണ്ണമായതായി അടയാളപ്പെടുത്തി സ്കോർ നേടുക",
+        trySayingLabel: "ഇങ്ങനെ പറഞ്ഞു നോക്കൂ:",
+        difficultyEasy: "എളുപ്പം",
+        difficultyMedium: "മധ്യം",
+        difficultyHard: "ಕഠിനം",
+        poseGoalLabel: "ഭാവ ലക്ഷ്യം",
+        confidenceLabel: "ആത്മവിശ്വാസം",
+        poseVerifiedBtn: "ഭാവം സ്ഥിരീകരിച്ചു! ബോനസ് നേടുക",
+        turnLabel: "ഉടെ ഊഴം",
+        protipLabel: "സൂചന / ടിപ്പ്",
+        baseRewardLabel: "അടിസ്ഥാന സ്കോർ",
+        listeningState: "കേൾക്കുന്നു...",
+        backSetupBtn: "സെറ്റപ്പിലേക്ക് മടങ്ങുക",
+        wheelTitle: "അടുത്തത് ആര്? ചക്രം തിരിക്കൂ!",
+        spinBtnText: "തിരിക്കുക",
+        spinBtnSubText: "ചക്രം",
+        wheelTip: "തിരിക്കാൻ ക്ലിക്ക് ചെയ്യുക അല്ലെങ്കിൽ 'Spin' എന്ന് പറയുക",
+        scoreboardTitle: "ടീം സ്കോർബോർഡ്",
+        chooseFateTitle: "നിങ്ങളുടെ വിധി തിരഞ്ഞെടുക്കുക!",
+        fateTip: "നിങ്ങൾ സത്യം പറയുമോ അതോ AI നൽകുന്ന ധൈര്യ വെല്ലുവിളി സ്വീകരിക്കുമോ?",
+        readAloudBtn: "ഉറക്കെ വായിക്കുക",
+        voiceTipsLabel: "ശബ്ദ നിർദ്ദേശങ്ങൾ:",
+        illustrationHeader: "AI ചിത്ര ജനറേറ്റർ",
+        geminiArtBadge: "ജെമിനി ആർട്ട്",
+        illustrationPlaceholder: "വെല്ലുവിളികൾക്കായി തൽക്ഷണം സൃഷ്ടിച്ച ചിത്രം",
+        interactiveConsoleHeader: "ധൈര്യ നിയന്ത്രണ പാനൽ",
+        cameraScannerTab: "ക്യാമറ സ്കാനർ",
+        arcadeGameTab: "ആർക്കേഡ് ഗെയിം",
+        scanningSpaceLabel: "സ്ഥലം സ്കാൻ ചെയ്യുന്നു...",
+        scanPostureBtn: "ഭാവം സ്കാൻ ചെയ്യുക",
+        skipBtn: "ഒഴിവാക്കുക",
+        voiceAssistantHeader: "AI വോയ്‌സ് അസിസ്റ്റന്റ്",
+        prestigeRecordsHeader: "നേട്ടങ്ങളുടെ റെക്കോർഡ്",
+        topChampionLabel: "മികച്ച താരം",
+        longestStreakLabel: "നീണ്ട വിജയം",
+        streakCountText: "5 വെല്ലുവിളികൾ",
+        descTruthPoints: "10 - 30 പോയിന്റുകൾ",
+        descDarePoints: "ക്യാമറ + മിനി-ഗെയിംസ്"
+      },
+      Marathi: {
+        title: "ट्रुथव्हर्स AI",
+        subtitle: "भविष्यातील रिअल-टाइम सच की डेअर गेम इंजिन",
+        addPlayersHeader: "संघामध्ये खेळाडू जोडा",
+        enterNamePlaceholder: "खेळाडूचे नाव प्रविष्ट करा...",
+        addSquadBtn: "सदस्य जोडा",
+        selectCategoryHeader: "खेळाचा प्रकार निवडा",
+        selectLanguageHeader: "लक्ष्य भाषा निवडा",
+        selectDifficultyHeader: "कठिणता पातळी निवडा",
+        enterPlaygroundBtn: "खेळाच्या मैदानात प्रवेश करा",
+        selectTruthBtn: "सत्य निवडा 🔮",
+        selectDareBtn: "डेअर निवडा 🔥",
+        passTurnBtn: "बारी सोडा",
+        markCompletedBtn: "पूर्ण झाले म्हणून चिन्हांकित करा आणि गुण मिळवा",
+        trySayingLabel: "बोलून पहा:",
+        difficultyEasy: "सोपे",
+        difficultyMedium: "मध्यम",
+        difficultyHard: "कठीण",
+        poseGoalLabel: "पोझ ध्येय",
+        confidenceLabel: "विश्वासार्हता",
+        poseVerifiedBtn: "पोझ सत्यापित! बोनस मिळवा",
+        turnLabel: "ची बारी",
+        protipLabel: "सल्ला / टीप",
+        baseRewardLabel: "मूळ गुण",
+        listeningState: "ऐकत आहे...",
+        backSetupBtn: "सेटअपवर परत जा",
+        wheelTitle: "पुढील कोण? चक्र फिरवा!",
+        spinBtnText: "फिरवा",
+        spinBtnSubText: "चक्र",
+        wheelTip: "फिरवण्यासाठी क्लिक करा किंवा 'Spin' म्हणा",
+        scoreboardTitle: "संघ स्कोअरबोर्ड",
+        chooseFateTitle: "तुमचे नशीब निवडा!",
+        fateTip: "तुम्ही सत्य सांगाल की AI-निर्मित डेअर आव्हानाचा सामना कराल?",
+        readAloudBtn: "मोठ्याने वाचा",
+        voiceTipsLabel: "आवाज सूचना:",
+        illustrationHeader: "AI चित्र जनरेटर",
+        geminiArtBadge: "जेमिनी आर्ट",
+        illustrationPlaceholder: "आव्हानांसाठी त्वरित तयार केलेले चित्र",
+        interactiveConsoleHeader: "डेअर कंसोल",
+        cameraScannerTab: "कॅमेरा स्कॅनर",
+        arcadeGameTab: "आर्केड गेम",
+        scanningSpaceLabel: "जागा स्कॅन करत आहे...",
+        scanPostureBtn: "पोझ स्कॅन करा",
+        skipBtn: "वगळा",
+        voiceAssistantHeader: "AI आवाज सहाय्यक",
+        prestigeRecordsHeader: "प्रतिष्ठा रेकॉर्ड",
+        topChampionLabel: "शीर्ष विजेता",
+        longestStreakLabel: "सर्वात लांब मालिका",
+        streakCountText: "5 आव्हाने",
+        descTruthPoints: "10 - 30 गुण",
+        descDarePoints: "कॅमेरा + मिनी-गेम्स"
+      },
+      Gujarati: {
+        title: "ટ્રુથવર્સ AI",
+        subtitle: "ભવિષ્યનું રિયલ-ટાઇમ સાચું કે સાહસ ગેમ એન્જિન",
+        addPlayersHeader: "ટુકડીમાં ખેલાડીઓ ઉમેરો",
+        enterNamePlaceholder: "ખેલાડીનું નામ લખો...",
+        addSquadBtn: "સભ્ય ઉમેરો",
+        selectCategoryHeader: "રમતની શ્રેણી પસંદ કરો",
+        selectLanguageHeader: "લક્ષ્ય ભાષા પસંદ કરો",
+        selectDifficultyHeader: "મુશ્કેલી સ્તર પસંદ કરો",
+        enterPlaygroundBtn: "રમત મેદાનમાં પ્રવેશ કરો",
+        selectTruthBtn: "સત્ય પસંદ કરો 🔮",
+        selectDareBtn: "સાહસ પસંદ કરો 🔥",
+        passTurnBtn: "વાર છોડો",
+        markCompletedBtn: "પૂર્ણ થયેલ ચિહ્નિત કરો અને સ્કોર મેળવો",
+        trySayingLabel: "બોલવાનો પ્રયત્ન કરો:",
+        difficultyEasy: "સરળ",
+        difficultyMedium: "મધ્યમ",
+        difficultyHard: "કઠિન",
+        poseGoalLabel: "પોઝ લક્ષ્ય",
+        confidenceLabel: "વિશ્વાસ",
+        poseVerifiedBtn: "પોઝ ચકાસાઈ ગયો! બોનસ મેળવો",
+        turnLabel: "નો વારો",
+        protipLabel: "ટીપ / સંકેત",
+        baseRewardLabel: "મૂળ ગુણ",
+        listeningState: "સાંભળી રહ્યું છે...",
+        backSetupBtn: "સેટઅપ પર પાછા જાઓ",
+        wheelTitle: "હવે કોનો વારો? ચક્ર ફેરવો!",
+        spinBtnText: "ફેરવો",
+        spinBtnSubText: "ચક્ર",
+        wheelTip: "ફેરવવા ક્લિક કરો અથવા 'Spin' બોલો",
+        scoreboardTitle: "ટુકડીનું સ્કોરબોર્ડ",
+        chooseFateTitle: "તમારું નસીબ પસંદ કરો!",
+        fateTip: "શું તમે સત્ય કહેશો કે પછી AI દ્વારા બનાવેલ સાહસ પડકાર સ્વીકારશો?",
+        readAloudBtn: "મોટેથી વાંચો",
+        voiceTipsLabel: "અવાજ સંકેતો:",
+        illustrationHeader: "AI ચિત્ર જનરેટર",
+        geminiArtBadge: "જેમિની આર્ટ",
+        illustrationPlaceholder: "પડકારો માટે ત્વરિત જનરેટ થયેલ ચિત્ર",
+        interactiveConsoleHeader: "સાહસ કન્સોલ",
+        cameraScannerTab: "કેમેરા સ્કેનર",
+        arcadeGameTab: "આર્કેડ રમત",
+        scanningSpaceLabel: "જગ્યા સ્કેન થઈ રહી છે...",
+        scanPostureBtn: "પોઝ સ્કેન કરો",
+        skipBtn: "છોડો",
+        voiceAssistantHeader: "AI અવાજ સહાયક",
+        prestigeRecordsHeader: "પ્રતિષ્ઠા રેકોર્ડ",
+        topChampionLabel: "ટોચના વિજેતા",
+        longestStreakLabel: "સૌથી લાંબી જીત",
+        streakCountText: "5 પડકારો",
+        descTruthPoints: "10 - 30 પોઇન્ટ",
+        descDarePoints: "કેમેરા + મિની-ગેમ્સ"
+      },
+      Bengali: {
+        title: "ট্রুথভার্স AI",
+        subtitle: "ভবিষ্যতের রিয়েল-টাইম সত্য নাকি সাহস গেম ইঞ্জিন",
+        addPlayersHeader: "স্কোয়াডে খেলোয়াড় যুক্ত করুন",
+        enterNamePlaceholder: "খেলোয়াড়ের নাম লিখুন...",
+        addSquadBtn: "সদস্য যুক্ত করুন",
+        selectCategoryHeader: "খেলার বিভাগ নির্বাচন করুন",
+        selectLanguageHeader: "ভাষা নির্বাচন করুন",
+        selectDifficultyHeader: "কঠিনতার স্তর নির্বাচন করুন",
+        enterPlaygroundBtn: "খেলার মাঠে প্রবেশ করুন",
+        selectTruthBtn: "সত্য নির্বাচন করুন 🔮",
+        selectDareBtn: "সাহস নির্বাচন করুন 🔥",
+        passTurnBtn: "দান ছেড়ে দিন",
+        markCompletedBtn: "সম্পন্ন চিহ্নিত করুন এবং স্কোর সংগ্রহ করুন",
+        trySayingLabel: "বলার চেষ্টা করুন:",
+        difficultyEasy: "সহজ",
+        difficultyMedium: "মাঝারি",
+        difficultyHard: "কঠিন",
+        poseGoalLabel: "ভঙ্গির লক্ষ্য",
+        confidenceLabel: "নির্ভরযোগ্যতা",
+        poseVerifiedBtn: "ভঙ্গি যাচাইকৃত! বোনাস গ্রহণ করুন",
+        turnLabel: "-এর দান",
+        protipLabel: "পরামর্শ / ইঙ্গিত",
+        baseRewardLabel: "মূল পয়েন্ট",
+        listeningState: "শুনছে...",
+        backSetupBtn: "সেটআপে ফিরে যান",
+        wheelTitle: "পরবর্তী কে? চাকা ঘোরান!",
+        spinBtnText: "ঘোরান",
+        spinBtnSubText: "চাকা",
+        wheelTip: "ঘোরাতে ক্লিক করুন অথবা 'Spin' বলুন",
+        scoreboardTitle: "দলগত স্কোরবোর্ড",
+        chooseFateTitle: "নিজের ভাগ্য বেছে নিন!",
+        fateTip: "আপনি কি সত্য বলবেন নাকি AI-নির্মিত সাহসের চ্যালেঞ্জ গ্রহণ করবেন?",
+        readAloudBtn: "জোরে পড়ুন",
+        voiceTipsLabel: "ভয়েস নির্দেশাবলী:",
+        illustrationHeader: "AI চিত্র জনারেটর",
+        geminiArtBadge: "জেমিনি আর্ট",
+        illustrationPlaceholder: "চ্যালেঞ্জের জন্য তাৎক্ষণিক তৈরি ছবি",
+        interactiveConsoleHeader: "সাহসের ইন্টারেক্টিভ কনসোল",
+        cameraScannerTab: "ক্যামেরা স্ক্যানার",
+        arcadeGameTab: "আর্কোড গেম",
+        scanningSpaceLabel: "স্ক্যান করা হচ্ছে...",
+        scanPostureBtn: "ভঙ্গি স্ক্যান করুন",
+        skipBtn: "এড়িয়ে যান",
+        voiceAssistantHeader: "AI ভয়েস অ্যাসিস্ট্যান্ট",
+        prestigeRecordsHeader: "সম্মানজনক রেকর্ড",
+        topChampionLabel: "সেরা বিজয়ী",
+        longestStreakLabel: "দীর্ঘতম ধারা",
+        streakCountText: "৫ টি চ্যালেঞ্জ",
+        descTruthPoints: "১০ - ৩০ পয়েন্ট",
+        descDarePoints: "ক্যামেরা + মিনি-গেম"
+      },
+      Punjabi: {
+        title: "ਟਰੂਥਵਰਸ AI",
+        subtitle: "ਭਵਿੱਖ ਦਾ ਰੀਅਲ-ਟਾਈਮ ਸੱਚ ਜਾਂ ਹਿੰਮਤ ਗੇਮ ਇੰਜਣ",
+        addPlayersHeader: "ਟੀਮ ਵਿੱਚ ਖਿਡਾਰੀ ਸ਼ਾਮਲ ਕਰੋ",
+        enterNamePlaceholder: "ਖਿਡਾਰੀ ਦਾ ਨਾਮ ਲਿਖੋ...",
+        addSquadBtn: "ਮੈਂਬਰ ਸ਼ਾਮਲ ਕਰੋ",
+        selectCategoryHeader: "ਖੇਡ ਦੀ ਸ਼੍ਰੇਣੀ ਚੁਣੋ",
+        selectLanguageHeader: "ਨਿਸ਼ਾਨਾ ਭਾਸ਼ਾ ਚੁਣੋ",
+        selectDifficultyHeader: "ਔਖਿਆਈ ਪੱਧਰ ਚੁਣੋ",
+        enterPlaygroundBtn: "ਖੇਡ ਦੇ ਮੈਦਾਨ ਵਿੱਚ ਦਾਖਲ ਹੋਵੋ",
+        selectTruthBtn: "ਸੱਚ ਚੁਣੋ 🔮",
+        selectDareBtn: "ਹਿੰਮਤ ਚੁਣੋ 🔥",
+        passTurnBtn: "ਵਾਰੀ ਛੱਡੋ",
+        markCompletedBtn: "ਪੂਰਾ ਹੋਇਆ ਚਿੰਨ੍ਹਿਤ ਕਰੋ ਅਤੇ ਅੰਕ ਪ੍ਰਾਪਤ ਕਰੋ",
+        trySayingLabel: "ਬੋਲਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ:",
+        difficultyEasy: "ਆਸਾਨ",
+        difficultyMedium: "ਦਰਮਿਆਨਾ",
+        difficultyHard: "ਮੁਸ਼ਕਲ",
+        poseGoalLabel: "ਪੋਜ਼ ਦਾ ਨਿਸ਼ਾਨਾ",
+        confidenceLabel: "ਭਰੋਸਾ",
+        poseVerifiedBtn: "ਪੋਜ਼ ਦੀ ਪੁਸ਼ਟੀ ਹੋਈ! ਬੋਨਸ ਲਓ",
+        turnLabel: "ਦੀ ਵਾਰੀ",
+        protipLabel: "ਸੁਝਾਅ / ਇਸ਼ਾਰਾ",
+        baseRewardLabel: "ਮੂਲ ਅੰਕ",
+        listeningState: "ਸੁਣ ਰਿਹਾ ਹੈ...",
+        backSetupBtn: "ਸੈਟਅਪ ਤੇ ਵਾਪਸ ਜਾਓ",
+        wheelTitle: "ਅਗਲਾ ਕੌਣ ਹੈ? ਚੱਕਰ ਘੁਮਾਓ!",
+        spinBtnText: "ਘੁਮਾਓ",
+        spinBtnSubText: "ਚੱਕਰ",
+        wheelTip: "ਘੁਮਾਉਣ ਲਈ ਕਲਿੱਕ ਕਰੋ ਜਾਂ 'Spin' ਬੋਲੋ",
+        scoreboardTitle: "ਟੀਮ ਸਕੋਰਬੋਰਡ",
+        chooseFateTitle: "ਆਪਣੀ ਕਿਸਮਤ ਚੁਣੋ!",
+        fateTip: "ਕੀ ਤੁਸੀਂ ਪੂਰਾ ਸੱਚ ਬੋਲੋਗੇ ਜਾਂ AI ਦੁਆਰਾ ਦਿੱਤੀ ਗਈ ਹਿੰਮਤ ਚੁਣੌਤੀ ਨੂੰ ਸਵੀਕਾਰ ਕਰੋਗੇ?",
+        readAloudBtn: "ਉੱਚੀ ਪੜ੍ਹੋ",
+        voiceTipsLabel: "ਆਵਾਜ਼ ਸੁਝਾਅ:",
+        illustrationHeader: "AI ਤਸਵੀਰ ਨਿਰਮਾਤਾ",
+        geminiArtBadge: "ਜੇਮਿਨੀ ਆਰਟ",
+        illustrationPlaceholder: "ਚੁਣੌਤੀਆਂ ਲਈ ਤੁਰੰਤ ਤਿਆਰ ਕੀਤੀ ਤਸਵੀਰ",
+        interactiveConsoleHeader: "ਹਿੰਮਤ ਕੰਟਰੋલ ਪੈਨਲ",
+        cameraScannerTab: "ਕੈਮਰਾ ਸਕੈനਰ",
+        arcadeGameTab: "ਆਰਕੇਡ ਗੇਮ",
+        scanningSpaceLabel: "ਸਕੈਨਿੰਗ ਜਾਰੀ ਹੈ...",
+        scanPostureBtn: "ਪੋਜ਼ ਸਕੈਨ ਕਰੋ",
+        skipBtn: "ਛੱਡੋ",
+        voiceAssistantHeader: "AI ਆਵਾਜ਼ ਸਹਾਇਕ",
+        prestigeRecordsHeader: "ਪ੍ਰਤਿਸ਼ਠਾ ਰਿਕਾਰਡ",
+        topChampionLabel: "ਚੋਟੀ ਦਾ ਜੇਤੂ",
+        longestStreakLabel: "ਸਭ ਤੋਂ ਲੰਬੀ ਜਿੱਤ",
+        streakCountText: "5 ਚੁណੌਤੀਆਂ",
+        descTruthPoints: "10 - 30 ਅੰਕ",
+        descDarePoints: "ਕੈਮਰਾ + ਮਿੰਨੀ-ਗੇਮਾਂ"
+      },
+      Odia: {
+        title: "ଟ୍ରୁଥଭର୍ସ AI",
+        subtitle: "ଭବିଷ୍ୟତର ରିଅଲ-ଟାଇମ୍ ସତ କିମ୍ବା ସାହସ ଗେମ୍ ଇଞ୍ଜିନ",
+        addPlayersHeader: "ଦଳରେ ଖେଳାଳୀ ଯୋଡନ୍ତୁ",
+        enterNamePlaceholder: "ଖେଳାଳୀଙ୍କ ନାମ ଲେଖନ୍ତୁ...",
+        addSquadBtn: "ସଦସ୍ୟ ଯୋଡନ୍ତୁ",
+        selectCategoryHeader: "ଖେଳ ଶ୍ରେଣୀ ଚୟନ କରନ୍ତୁ",
+        selectLanguageHeader: "ଭାଷା ଚୟନ କରନ୍ତୁ",
+        selectDifficultyHeader: "କଠିନତା ସ୍ତର ଚୟନ କରନ୍ତୁ",
+        enterPlaygroundBtn: "ଖେଳ ପଡ଼ିଆକୁ ପ୍ରବେଶ କରନ୍ତು",
+        selectTruthBtn: "ସତ୍ୟ ଚୟନ କରନ୍ତು 🔮",
+        selectDareBtn: "ସାହସ ଚୟନ କରନ୍ତು 🔥",
+        passTurnBtn: "ସୁଯୋଗ ଛାଡନ୍ତୁ",
+        markCompletedBtn: "ସମ୍ପୂର୍ଣ୍ଣ ଚିହ୍ନିତ କରନ୍ତು ଏବଂ ସ୍କୋਰ ହାସଲ କରନ୍ତು",
+        trySayingLabel: "କହିବାକୁ ଚେଷ୍ଟା କରନ୍ତು:",
+        difficultyEasy: "ସହଜ",
+        difficultyMedium: "මଧ୍ୟମ",
+        difficultyHard: "କଠିନ",
+        poseGoalLabel: "ଭଙ୍ଗୀ ଲକ୍ଷ୍ୟ",
+        confidenceLabel: "ବିଶ୍ୱାସ",
+        poseVerifiedBtn: "ଭଙ୍ଗୀ ଯାଞ୍ଚ ହେଲା! ବୋନସ୍ ଗ୍ରହଣ କରନ୍ତୁ",
+        turnLabel: "ଙ୍କ ପାଳି",
+        protipLabel: "ଟିପ୍ସ / ସୂଚନା",
+        baseRewardLabel: "ମୂଳ ପଏଣ୍ଟ",
+        listeningState: "ଶୁଣୁଛି...",
+        backSetupBtn: "ସେଟଅପ୍‌କୁ ଫେରିଯାଆନ୍ତୁ",
+        wheelTitle: "ପରବର୍ତ୍ତୀ କିଏ? ଚକ ଘୂରାନ୍ତୁ!",
+        spinBtnText: "ଘୂରାଅ",
+        spinBtnSubText: "ଚକ",
+        wheelTip: "ଘୂରାଇବା ପାଇଁ କ୍ଲିକ୍ କରନ୍ତು କିମ୍ବା 'Spin' କୁହନ୍ତು",
+        scoreboardTitle: "ଦଳଗତ ସ୍କୋරବୋର୍ଡ",
+        chooseFateTitle: "ଆପଣଙ୍କ ଭାଗ୍ୟ ଚୟନ କରନ୍ତୁ!",
+        fateTip: "ଆପଣ ସମ୍ପୂର୍ଣ୍ଣ ସତ୍ୟ କହିବେ ନା AI ଦ୍ୱାରା ପ୍ରସ୍ତୁତ ସାହସ ଚ୍ୟାଲେଞ୍ଜର ସମ୍ମୁଖୀନ ହେବେ?",
+        readAloudBtn: "ଉଚ୍ଚ ସ୍ୱରରେ ପଢ଼ନ୍ତୁ",
+        voiceTipsLabel: "ସ୍ୱର ସୂଚନା:",
+        illustrationHeader: "AI ଚିତ୍ର ଜେନେରେଟର",
+        geminiArtBadge: "ଜେମିନି ଆର୍ଟ",
+        illustrationPlaceholder: "ଚ୍ୟାଲେଞ୍ಜ ପାଇଁ ତୁରନ୍ତ ପ୍ରସ୍ତୁତ ଚିତ୍ର",
+        interactiveConsoleHeader: "ସାହସ କଣ୍ଟ୍ରୋଲ୍ ପ୍ୟାନେଲ୍",
+        cameraScannerTab: "କ୍ୟାମେରା ସ୍କାନର୍",
+        arcadeGameTab: "ଆର୍କେଡ୍ ଖେଳ",
+        scanningSpaceLabel: "ସ୍କାନିଂ ଚାଲିଛି...",
+        scanPostureBtn: "ଭଙ୍ଗୀ ସ୍କାନ୍ କରନ୍ତು",
+        skipBtn: "ଏଡ଼ାଇ ଯାଆନ୍ତು",
+        voiceAssistantHeader: "AI ସ୍ୱର ସହାୟକ",
+        prestigeRecordsHeader: "ସମ୍ମାନଜନକ ରେକର୍ଡ",
+        topChampionLabel: "ଶୀର୍ଷ ବିଜେତା",
+        longestStreakLabel: "ସବୁଠୁ ଲମ୍ବା ବିଜୟ",
+        streakCountText: "୫ ଟି ଚ୍ୟାଲେଞ୍ಜ",
+        descTruthPoints: "୧୦ - ୩୦ ପଏଣ୍ଟ",
+        descDarePoints: "କ୍ୟାମେରା + ମିନି-ଖେଳ"
+      }
+    };
+
+    const AVATAR_COLORS = [
+      "#6366f1", // indigo
+      "#ef4444", // red
+      "#10b981", // emerald
+      "#f59e0b", // amber
+      "#8b5cf6", // violet
+      "#ec4899", // pink
+      "#06b6d4", // cyan
+      "#14b8a6"  // teal
+    ];
+
+    // Core Game States
+    let players = [
+      { id: "1", name: "Chethan", score: 0, color: AVATAR_COLORS[0] },
+      { id: "2", name: "Priya", score: 0, color: AVATAR_COLORS[4] }
+    ];
+    let selectedPlayer = null;
+    let currentChallenge = null;
+    let claimedBonus = { camera: false, miniGame: false };
+    let countdownInterval = null;
+    let timeRemaining = 45;
+    let currentLanguageSetting = "English";
+
+    // Canvas rendering details
+    let animationFrameId = null;
+    let runningAnimationFunc = null;
+
+    // Camera simulated posture variables
+    let cameraStream = null;
+    let cameraVerifyTimer = null;
+    let simulatedConfidence = 25;
+
+    // Arcade Mini game variables
+    let miniGameTimer = null;
+    let miniGameScore = 0;
+    let miniGameTimeLeft = 15;
+    let miniGameObjects = [];
+    let isMiniGameRunning = false;
+
+    // Speech Assistant variables
+    let voiceRecognition = null;
+    let isSpeechListening = false;
+    let isSpeechListeningRequested = false;
+    let isSpeakingNow = false;
+
+    // Responsive Button Class Constants
+    const BTN_MANUAL_ACTIVE = "flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-lg shadow-indigo-600/10 focus:outline-none";
+    const BTN_MANUAL_INACTIVE = "flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 focus:outline-none";
+
+    const BTN_VOICE_ACTIVE = "flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white shadow-lg shadow-emerald-600/10 focus:outline-none";
+    const BTN_VOICE_INACTIVE = "flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 focus:outline-none";
+
+    // Initialization
+    window.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      updatePlayersSetupView();
+      setupSpeechRecognition();
+    });
+
+    // Language Change Trigger
+        function changeLanguage() {
+      const lang = document.getElementById("select-language").value;
+      currentLanguageSetting = lang;
+      const trans = TRANSLATIONS[lang] || TRANSLATIONS.English;
+      
+      // Update Setup labels dynamically
+      document.getElementById("header-title").innerText = trans.title;
+      document.getElementById("header-subtitle").innerText = trans.subtitle;
+      document.getElementById("setup-title").innerHTML = `<i data-lucide="users" class="w-6 h-6 text-indigo-400"></i> ${trans.addPlayersHeader}`;
+      document.getElementById("player-input").placeholder = trans.enterNamePlaceholder;
+      document.getElementById("btn-add-member").innerText = trans.addSquadBtn.toUpperCase();
+      document.getElementById("label-category").innerText = trans.selectCategoryHeader;
+      document.getElementById("label-language").innerText = trans.selectLanguageHeader;
+      document.getElementById("label-difficulty").innerText = trans.selectDifficultyHeader;
+      document.getElementById("btn-enter-playground").innerHTML = `${trans.enterPlaygroundBtn} 🚀`;
+      
+      // Update Prestige Records labels
+      if (document.getElementById("label-prestige")) {
+        document.getElementById("label-prestige").innerHTML = `<i data-lucide="award" class="w-5 h-5 text-amber-400"></i> ${trans.prestigeRecordsHeader}`;
+      }
+      if (document.getElementById("prestige-top-player-label")) {
+        document.getElementById("prestige-top-player-label").innerText = trans.topChampionLabel;
+      }
+      if (document.getElementById("prestige-streak-label")) {
+        document.getElementById("prestige-streak-label").innerText = trans.longestStreakLabel;
+      }
+      if (document.getElementById("protip-header")) {
+        document.getElementById("protip-header").innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ${trans.protipLabel.toUpperCase()}`;
+      }
+      
+      // Update Lobby / Spin Wheel labels
+      if (document.getElementById("wheel-title")) {
+        document.getElementById("wheel-title").innerText = trans.wheelTitle;
+      }
+      if (document.getElementById("spin-btn")) {
+        document.getElementById("spin-btn").innerHTML = `<span>${trans.spinBtnText}</span><span class="text-[9px] text-indigo-200 mt-0.5">${trans.spinBtnSubText}</span>`;
+      }
+      if (document.getElementById("wheel-tip")) {
+        document.getElementById("wheel-tip").innerText = trans.wheelTip;
+      }
+      if (document.getElementById("scoreboard-title")) {
+        document.getElementById("scoreboard-title").innerHTML = `<i data-lucide="award" class="w-5 h-5 text-amber-500"></i> ${trans.scoreboardTitle}`;
+      }
+      if (document.getElementById("btn-back-setup")) {
+        document.getElementById("btn-back-setup").innerText = trans.backSetupBtn;
+      }
+
+      // Update Choose Fate labels
+      if (document.getElementById("choose-fate-title")) {
+        document.getElementById("choose-fate-title").innerText = trans.chooseFateTitle;
+      }
+      if (document.getElementById("fate-tip")) {
+        document.getElementById("fate-tip").innerText = trans.fateTip;
+      }
+      if (document.getElementById("btn-select-truth")) {
+        document.getElementById("btn-select-truth").innerText = trans.selectTruthBtn;
+      }
+      if (document.getElementById("btn-select-dare")) {
+        document.getElementById("btn-select-dare").innerText = trans.selectDareBtn;
+      }
+      if (document.getElementById("desc-truth-points")) {
+        document.getElementById("desc-truth-points").innerText = trans.descTruthPoints;
+      }
+      if (document.getElementById("desc-dare-points")) {
+        document.getElementById("desc-dare-points").innerText = trans.descDarePoints;
+      }
+
+      // Update Active Challenge Panel labels
+      if (document.getElementById("label-hint")) {
+        document.getElementById("label-hint").innerText = `${trans.protipLabel}:`;
+      }
+      if (document.getElementById("btn-read-aloud")) {
+        document.getElementById("btn-read-aloud").innerHTML = `<i data-lucide="volume2" class="w-3.5 h-3.5"></i> ${trans.readAloudBtn}`;
+      }
+      if (document.getElementById("label-voice-tips")) {
+        document.getElementById("label-voice-tips").innerText = trans.voiceTipsLabel;
+      }
+      if (document.getElementById("btn-pass-turn")) {
+        document.getElementById("btn-pass-turn").innerHTML = `<i data-lucide="rotate-ccw" class="w-5 h-5"></i> ${trans.passTurnBtn}`;
+      }
+      if (document.getElementById("btn-mark-completed")) {
+        document.getElementById("btn-mark-completed").innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> ${trans.markCompletedBtn}`;
+      }
+
+      // Update Illustration & Interactive console
+      if (document.getElementById("label-illustration-header")) {
+        document.getElementById("label-illustration-header").innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i> ${trans.illustrationHeader}`;
+      }
+      if (document.getElementById("badge-illustrations")) {
+        document.getElementById("badge-illustrations").innerText = trans.geminiArtBadge;
+      }
+      if (document.getElementById("illustration-placeholder")) {
+        document.getElementById("illustration-placeholder").innerHTML = `<i data-lucide="video" class="w-10 h-10 mb-2 opacity-35"></i><p class="text-xs">${trans.illustrationPlaceholder}</p>`;
+      }
+      if (document.getElementById("label-arcade-header")) {
+        document.getElementById("label-arcade-header").innerText = trans.interactiveConsoleHeader;
+      }
+      if (document.getElementById("tab-btn-camera")) {
+        document.getElementById("tab-btn-camera").innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5"></i> ${trans.cameraScannerTab}`;
+      }
+      if (document.getElementById("tab-btn-game")) {
+        document.getElementById("tab-btn-game").innerHTML = `<i data-lucide="play" class="w-3.5 h-3.5"></i> ${trans.arcadeGameTab}`;
+      }
+      if (document.getElementById("label-scans")) {
+        document.getElementById("label-scans").innerText = trans.scanningSpaceLabel;
+      }
+      if (document.getElementById("label-pose-goal")) {
+        document.getElementById("label-pose-goal").innerText = trans.poseGoalLabel;
+      }
+      if (document.getElementById("verify-scan-btn")) {
+        document.getElementById("verify-scan-btn").innerHTML = `<i data-lucide="video" class="w-4 h-4"></i> ${trans.scanPostureBtn}`;
+      }
+      if (document.getElementById("btn-skip-scan")) {
+        document.getElementById("btn-skip-scan").innerText = trans.skipBtn;
+      }
+
+      // Update Voice Assistant Panel labels
+      if (document.getElementById("label-assistant-header")) {
+        document.getElementById("label-assistant-header").innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i> ${trans.voiceAssistantHeader}`;
+      }
+
+      // Re-translate current active challenge elements if active
+      if (currentChallenge) {
+        updateActiveChallengeTranslation();
+      }
+
+      // Dynamic update of Speech Recognition language
+      if (voiceRecognition) {
+        const wasListening = isSpeechListening;
+        if (wasListening) {
+          voiceRecognition.stop();
+        }
+        voiceRecognition.lang = getLocalVoiceLangCode();
+        if (wasListening) {
+          setTimeout(() => {
+            try {
+              voiceRecognition.start();
+            } catch (err) {
+              console.warn("Speech recognition restart failed:", err);
+            }
+          }, 400);
+        }
+      }
+
+      lucide.createIcons();
+    }
+
+    function updateActiveChallengeTranslation() {
+      if (!currentChallenge) return;
+      const trans = TRANSLATIONS[currentLanguageSetting] || TRANSLATIONS.English;
+      
+      // Update badge mode & badge difficulty on card
+      document.getElementById("badge-mode").innerText = currentChallenge.mode === "Truth" ? (trans.selectTruthBtn.replace("🔮", "").trim()) : (trans.selectDareBtn.replace("🔥", "").trim());
+      document.getElementById("badge-difficulty").innerText = trans[`difficulty${currentChallenge.difficulty}`] || currentChallenge.difficulty;
+      document.getElementById("label-challenge-title").innerText = currentChallenge.mode === "Truth" ? trans.title : trans.interactiveConsoleHeader;
+      
+      if (document.getElementById("label-hint")) {
+        document.getElementById("label-hint").innerText = `${trans.protipLabel}:`;
+      }
+      
+      // Update voice suggestions chips with clean localized options
+      const chipsContainer = document.getElementById("voice-suggestions-list");
+      if (chipsContainer) {
+        chipsContainer.innerHTML = "";
+        const suggestions = currentChallenge.voiceSuggestions || ["Completed", "Pass Turn", "Next"];
+        suggestions.forEach(v => {
+          chipsContainer.innerHTML += `
+            <span onclick="triggerVoiceCommand('${v}')" class="text-[10px] bg-slate-950 hover:bg-indigo-950/40 cursor-pointer border border-slate-800 hover:border-indigo-500 text-slate-400 hover:text-indigo-300 font-mono px-2.5 py-1 rounded-full uppercase transition-colors">
+              "${v}"
+            </span>
+          `;
+        });
+      }
+    }
+
+    // ROSTER MANAGEMENT
+    function updatePlayersSetupView() {
+      const container = document.getElementById("setup-players-container");
+      container.innerHTML = "";
+      players.forEach((p, idx) => {
+        container.innerHTML += `
+          <div class="flex items-center justify-between p-3 bg-slate-950/60 rounded-xl border border-slate-900 group hover:border-slate-800 transition-colors">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span>
+              <span class="text-sm font-medium text-slate-200">${escapeHtml(p.name)}</span>
+            </div>
+            <button onclick="removePlayer('${p.id}')" class="text-slate-600 hover:text-rose-400 p-1 rounded-lg hover:bg-rose-950/20 transition-colors">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+      });
+      document.getElementById("player-count").innerText = `${players.length} Players`;
+      lucide.createIcons();
+    }
+
+    function addPlayerFromInput() {
+      const input = document.getElementById("player-input");
+      const name = input.value.trim();
+      if (!name) return;
+
+      const color = AVATAR_COLORS[players.length % AVATAR_COLORS.length];
+      players.push({
+        id: Date.now().toString(),
+        name: name,
+        score: 0,
+        color: color
+      });
+      input.value = "";
+      updatePlayersSetupView();
+    }
+
+    function removePlayer(id) {
+      players = players.filter(p => p.id !== id);
+      updatePlayersSetupView();
+    }
+
+    // GAME FLOW CONTROLLER
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+
+    function navigateSetup() {
+      document.getElementById("view-setup").classList.remove("hidden");
+      document.getElementById("view-lobby").classList.add("hidden");
+      document.getElementById("view-challenge").classList.add("hidden");
+      scrollToTop();
+    }
+
+    function startGame() {
+      if (players.length < 1) {
+        alert("Please add at least 1 player to the squad!");
+        return;
+      }
+      
+      // Navigate to Lobby view
+      document.getElementById("view-setup").classList.add("hidden");
+      document.getElementById("view-lobby").classList.remove("hidden");
+      document.getElementById("view-challenge").classList.add("hidden");
+      
+      updateLobbyScoreboard();
+      drawLobbySpinningWheel();
+      
+      // local time check or greeting speech
+      speakGlobalAnnouncement("welcome");
+      scrollToTop();
+    }
+
+    // SCOREBOARD UPDATE
+    function updateLobbyScoreboard() {
+      const container = document.getElementById("lobby-scoreboard-container");
+      container.innerHTML = "";
+      
+      // Sort players by score
+      const sorted = [...players].sort((a,b) => b.score - a.score);
+      
+      // Update top prestige player
+      if (sorted.length > 0) {
+        document.getElementById("prestige-top-player").innerText = sorted[0].name;
+      }
+
+      sorted.forEach((p, idx) => {
+        let medal = "";
+        if (idx === 0) medal = "🥇";
+        else if (idx === 1) medal = "🥈";
+        else if (idx === 2) medal = "🥉";
+
+        container.innerHTML += `
+          <div class="flex items-center justify-between p-3.5 bg-slate-950/40 rounded-xl border border-slate-900">
+            <div class="flex items-center gap-3">
+              <span class="font-mono text-xs text-slate-500 font-bold w-4">${idx + 1}</span>
+              <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs shadow-lg" style="background-color: ${p.color}">
+                ${p.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <span class="text-xs font-semibold text-slate-300">${escapeHtml(p.name)}</span>
+                <span class="text-[10px] text-slate-500 block font-medium">${medal ? medal + " Leader" : "Squad Member"}</span>
+              </div>
+            </div>
+            <span class="font-mono text-sm font-bold text-indigo-400">${p.score} pts</span>
+          </div>
+        `;
+      });
+    }
+
+    // SPINNING WHEEL CONTROLLER
+    let startAngle = 0;
+    let arc = 0;
+    let spinTimeout = null;
+    let spinAngleStart = 10;
+    let spinTime = 0;
+    let spinTimeTotal = 0;
+    let ctxWheel = null;
+
+    function drawLobbySpinningWheel() {
+      const canvas = document.getElementById("wheel-canvas");
+      ctxWheel = canvas.getContext("2d");
+      ctxWheel.clearRect(0,0,380,380);
+
+      const numSegments = players.length || 1;
+      arc = Math.PI * 2 / numSegments;
+
+      // Draw segments
+      for(let i=0; i<numSegments; i++) {
+        const angle = startAngle + i * arc;
+        const player = players[i] || { name: "Squad", color: "#6366f1" };
+        
+        ctxWheel.fillStyle = player.color;
+        ctxWheel.beginPath();
+        ctxWheel.moveTo(190, 190);
+        ctxWheel.arc(190, 190, 160, angle, angle + arc, false);
+        ctxWheel.lineTo(190, 190);
+        ctxWheel.fill();
+
+        // Draw segment borders
+        ctxWheel.strokeStyle = "#020617";
+        ctxWheel.lineWidth = 4;
+        ctxWheel.stroke();
+
+        // Draw text
+        ctxWheel.save();
+        ctxWheel.fillStyle = "#ffffff";
+        ctxWheel.translate(190, 190);
+        ctxWheel.rotate(angle + arc / 2);
+        ctxWheel.font = "bold 13px 'Space Grotesk', sans-serif";
+        ctxWheel.textAlign = "right";
+        ctxWheel.shadowColor = "rgba(0,0,0,0.5)";
+        ctxWheel.shadowBlur = 4;
+        
+        let label = player.name;
+        if (label.length > 10) label = label.substring(0, 8) + "..";
+        ctxWheel.fillText(label, 140, 5);
+        ctxWheel.restore();
+      }
+
+      // Draw inner core hub
+      ctxWheel.beginPath();
+      ctxWheel.arc(190, 190, 45, 0, Math.PI * 2, false);
+      ctxWheel.fillStyle = "#0f172a";
+      ctxWheel.fill();
+      ctxWheel.strokeStyle = "#1e293b";
+      ctxWheel.lineWidth = 4;
+      ctxWheel.stroke();
+    }
+
+    function spinWheel() {
+      if (players.length === 0) return;
+      document.getElementById("spin-btn").disabled = true;
+      spinAngleStart = Math.random() * 10 + 10;
+      spinTime = 0;
+      spinTimeTotal = Math.random() * 3000 + 4000;
+      rotateWheel();
+    }
+
+    function rotateWheel() {
+      spinTime += 30;
+      if (spinTime >= spinTimeTotal) {
+        stopWheelRotation();
+        return;
+      }
+      const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+      startAngle += (spinAngle * Math.PI / 180);
+      drawLobbySpinningWheel();
+      spinTimeout = setTimeout(rotateWheel, 30);
+    }
+
+    function stopWheelRotation() {
+      clearTimeout(spinTimeout);
+      document.getElementById("spin-btn").disabled = false;
+
+      // Determine who was selected
+      const numSegments = players.length;
+      const degrees = startAngle * 180 / Math.PI + 90;
+      const arcd = arc * 180 / Math.PI;
+      const index = Math.floor((360 - (degrees % 360)) / arcd) % numSegments;
+      
+      const winner = players[index];
+      selectedPlayer = winner;
+
+      // Speak & Announce
+      speakGlobalAnnouncement("winner_selected", { name: winner.name });
+      
+      // Delay transition for visual anticipation
+      setTimeout(() => {
+        launchChallengeScreen(winner);
+      }, 1200);
+    }
+
+    function easeOut(t, b, c, d) {
+      const ts = (t /= d) * t;
+      const tc = ts * t;
+      return b + c * (tc + -3 * ts + 3 * t);
+    }
+
+
+    // CHALLENGE SCREEN LAUNCHER
+    function launchChallengeScreen(player) {
+      // Show View challenge
+      document.getElementById("view-lobby").classList.add("hidden");
+      document.getElementById("view-challenge").classList.remove("hidden");
+      scrollToTop();
+
+      // Set state
+      document.getElementById("active-player-highlight").innerText = player.name;
+      document.getElementById("active-player-highlight").style.color = player.color;
+
+      // Clear old state & show Mode selections
+      currentChallenge = null;
+      claimedBonus = { camera: false, miniGame: false };
+      document.getElementById("challenge-mode-selection").classList.remove("hidden");
+      document.getElementById("challenge-active-panel").classList.add("hidden");
+      document.getElementById("widget-arcade").classList.add("hidden");
+
+      // Default artwork placeholder reset
+      document.getElementById("illustration-placeholder").classList.remove("hidden");
+      document.getElementById("illustration-img").classList.add("hidden");
+      document.getElementById("illustration-img").src = "";
+
+      // Stop previous canvas animation loop
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      const canvas = document.getElementById("animation-canvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Trigger text announcer
+      speakLocalizedTurn(player.name);
+    }
+
+    // Multilingual Voice Announcement Mappings
+    const ANNOUNCEMENT_TRANSLATIONS = {
+      English: {
+        welcome: "Welcome to Truthverse AI. Ready to spin the wheel!",
+        winner_selected: "{name} was selected. Let the challenge begin!",
+        time_expired: "Time expired for this challenge!",
+        pose_verified: "Posture successfully verified! Bonus points gained!",
+        scan_skipped: "Camera scan verification skipped.",
+        arcade_complete: "Arcade complete! You popped objects for a high score of {score}.",
+        pass_turn: "Turn skipped. Back to the celestial lobby.",
+        task_verified: "Task verified! Congratulations {name}, you gained {score} points."
+      },
+      Kannada: {
+        welcome: "ಟ್ರೂತ್‌ವರ್ಸ್ AI ಗೆ ಸುಸ್ವಾಗತ. ಚಕ್ರವನ್ನು ತಿರುಗಿಸಲು ಸಿದ್ಧರಾಗಿ!",
+        winner_selected: "{name} ಆಯ್ಕೆಯಾಗಿದ್ದಾರೆ. ಸವಾಲು ಪ್ರಾರಂಭವಾಗಲಿ!",
+        time_expired: "ಈ ಸವಾಲಿನ ಸಮಯ ಮೀರಿದೆ!",
+        pose_verified: "ಭಂಗಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ದೃಢೀಕರಿಸಲಾಗಿದೆ! ಬೋನಸ್ ಅಂಕಗಳನ್ನು ಗಳಿಸಲಾಗಿದೆ!",
+        scan_skipped: "ಕ್ಯಾಮೆರಾ ಸ್ಕ್ಯಾನ್ ದೃಢೀಕರಣವನ್ನು ಬಿಟ್ಟುಬಿಡಲಾಗಿದೆ.",
+        arcade_complete: "ಆರ್ಕೇಡ್ ಪೂರ್ಣಗೊಂಡಿದೆ! ನೀವು {score} ಅಂಕಗಳೊಂದಿಗೆ ವಸ್ತುಗಳನ್ನು ಒಡೆದಿದ್ದೀರಿ.",
+        pass_turn: "ಸರದಿ ಬಿಡಲಾಗಿದೆ. ಮತ್ತೆ ಲಾಬಿಗೆ ಹಿಂತಿರುಗಿ.",
+        task_verified: "ಕಾರ್ಯ ದೃಢೀಕರಿಸಲ್ಪಟ್ಟಿದೆ! ಅಭಿನಂದನೆಗಳು {name}, ನೀವು {score} ಅಂಕಗಳನ್ನು ಗಳಿಸಿದ್ದೀರಿ."
+      },
+      Hindi: {
+        welcome: "ट्रुथवर्स AI में आपका स्वागत है। पहिया घुमाने के लिए तैयार हो जाइए!",
+        winner_selected: "{name} को चुना गया है। चुनौती शुरू होने दें!",
+        time_expired: "इस चुनौती का समय समाप्त हो गया है!",
+        pose_verified: "मुद्रा सफलतापूर्वक सत्यापित की गई! बोनस अंक प्राप्त हुए!",
+        scan_skipped: "कैमरा स्कैन सत्यापन छोड़ दिया गया।",
+        arcade_complete: "आर्केड पूरा हुआ! आपने {score} के उच्च स्कोर के लिए वस्तुओं को पॉप किया।",
+        pass_turn: "बारी छोड़ दी गई। वापस लॉबी में चलें।",
+        task_verified: "कार्य सत्यापित! बधाई हो {name}, आपने {score} अंक प्राप्त किए।"
+      },
+      Telugu: {
+        welcome: "ట్రూత్‌వర్స్ AI కి స్వాగతం. చక్రం తిప్పడానికి సిద్ధంగా ఉండండి!",
+        winner_selected: "{name} ఎంపికయ్యారు. సవాలును ప్రారంభించనివ్వండి!",
+        time_expired: "ఈ సవాలుకు సమయం ముగిసింది!",
+        pose_verified: "భంగిమ విజయవంతంగా ధృవీకరించబడింది! బోనస్ పాయింట్లు వచ్చాయి!",
+        scan_skipped: "కెమెరా స్కాన్ ధృవీకరణ దాటవేయబడింది.",
+        arcade_complete: "ఆర్కేడ్ పూర్తయింది! మీరు {score} స్కోరు కోసం ఆబ్జెక్ట్‌లను పాప్ చేసారు.",
+        pass_turn: "వంతు దాటవేయబడింది. తిరిగి లాబీకి చేరుకోండి.",
+        task_verified: "కార్యం ధృవీకరించబడింది! అభినందనలు {name}, మీరు {score} పాయింట్లు సాధించారు."
+      },
+      Tamil: {
+        welcome: "ட்ரூத்வெர்ஸ் AI க்கு உங்களை வரவேற்கிறோம். சக்கரத்தை சுழற்ற தயாராகுங்கள்!",
+        winner_selected: "{name} தேர்ந்தெடுக்கப்பட்டார். சவால் தொடங்கட்டும்!",
+        time_expired: "இந்த சவாலுக்கான நேரம் முடிந்தது!",
+        pose_verified: "தோரணை வெற்றிகரமாக சரிபார்க்கப்பட்டது! போனஸ் புள்ளிகள் பெறப்பட்டன!",
+        scan_skipped: "கேமரா ஸ்கேன் சரிபார்ப்பு தவிர்க்கப்பட்டது.",
+        arcade_complete: "ஆர்கேடு முடிந்தது! நீங்கள் {score} மதிப்பெண் பெற பொருட்களை உடைத்தீர்கள்.",
+        pass_turn: "முறை தவிர்க்கப்பட்டது. மீண்டும் லாபிக்குச் செல்லவும்.",
+        task_verified: "விளையாட்டு சரிபார்க்கப்பட்டது! வாழ்த்துகள் {name}, நீங்கள் {score} புள்ளிகளைப் பெற்றீர்கள்."
+      },
+      Malayalam: {
+        welcome: "ട്രൂത്ത്‌വേഴ്സ് AI-ലേക്ക് സ്വാഗതം. ചക്രം തിരിക്കാൻ തയ്യാറാകൂ!",
+        winner_selected: "{name} തിരഞ്ഞെടുക്കപ്പെട്ടു. വെല്ലുവിളി ആരംഭിക്കട്ടെ!",
+        time_expired: "ഈ വെല്ലുവിളിയുടെ സമയം കഴിഞ്ഞു!",
+        pose_verified: "ഭാവം വിജയകരമായി സ്ഥിരീകരിച്ചു! ബോനസ് പോയിന്റുകൾ ലഭിച്ചു!",
+        scan_skipped: "ക്യാമറ സ്കാൻ സ്ഥിരീകരണം ഒഴിവാക്കി.",
+        arcade_complete: "ആർക്കേഡ് പൂർത്തിയായി! {score} സ്കോറിനായി നിങ്ങൾ ഒബ്ജക്റ്റുകൾ പോപ്പ് ചെയ്തു.",
+        pass_turn: "ഊഴം ഒഴിവാക്കി. വീണ്ടും ലോബിയിലേക്ക് മടങ്ങുക.",
+        task_verified: "ചലഞ്ച് സ്ഥിരീകരിച്ചു! അഭിനന്ദനങ്ങൾ {name}, നിങ്ങൾക്ക് {score} പോയിന്റുകൾ ലഭിച്ചു."
+      },
+      Marathi: {
+        welcome: "ट्रुथव्हर्स AI मध्ये आपले स्वागत आहे. चक्र फिरवण्यासाठी तयार व्हा!",
+        winner_selected: "{name} ची निवड झाली आहे. आव्हान सुरू करूया!",
+        time_expired: "या आव्हानाची वेळ संपली आहे!",
+        pose_verified: "पोझ यशस्वीरित्या सत्यापित झाली! बोनस गुण मिळाले!",
+        scan_skipped: "कॅमेरा स्कॅन सत्यापन वगळले गेले.",
+        arcade_complete: "आर्केड पूर्ण! तुम्ही {score} गुणांसाठी वस्तू फोडल्या.",
+        pass_turn: "बारी वगळली. परत लॉबीमध्ये जाऊया.",
+        task_verified: "कार्य सत्यापित! अभिनंदन {name}, तुम्हाला {score} गुण मिळाले."
+      },
+      Gujarati: {
+        welcome: "ટ્રુથવર્સ AI માં આપનું સ્વાગત છે. ચક્ર ફેરવવા માટે તૈયાર થઈ જાઓ!",
+        winner_selected: "{name} ની પસંદગી કરવામાં આવી છે. પડકાર શરૂ થવા દો!",
+        time_expired: "આ પડકાર માટે સમય પૂરો થઈ ગયો છે!",
+        pose_verified: "પોઝ સફળતાપૂર્વક ચકાસવામાં આવ્યો છે! બોનસ પોઇન્ટ મળ્યા!",
+        scan_skipped: "કેમેરા સ્કેન ચકાસણી છોડી દેવામાં આવી.",
+        arcade_complete: "આર્કેડ પૂર્ણ! તમે {score} સ્કોર માટે વસ્તુઓ તોડી.",
+        pass_turn: "વારો છોડી દેવામાં આવ્યો. પાછા લોબીમાં જાઓ.",
+        task_verified: "કાર્ય ચકાસવામાં આવ્યું! અભિંદન {name}, તમે {score} પોઇન્ટ મેળવ્યા."
+      },
+      Bengali: {
+        welcome: "ট্রুথভার্স AI-তে আপনাকে স্বাগত। চাকা ঘোরানোর জন্য প্রস্তুত হন!",
+        winner_selected: "{name} নির্বাচিত হয়েছেন। চ্যালেঞ্জ শুরু হোক!",
+        time_expired: "এই চ্যালেঞ্জের সময় শেষ হয়ে গেছে!",
+        pose_verified: "ভঙ্গি সফলভাবে যাচাই করা হয়েছে! বোনাস পয়েন্ট অর্জিত হয়েছে!",
+        scan_skipped: "ক্যামেরা স্ক্যান যাচাইকরণ এড়ানো হয়েছে।",
+        arcade_complete: "আর্কেড সম্পূর্ণ! আপনি {score} স্কোরের জন্য বস্তু পপ করেছেন।",
+        pass_turn: "দান এড়ানো হয়েছে। লবিতে ফিরে যান।",
+        task_verified: "কাজ যাচাই করা হয়েছে! অভিনন্দন {name}, আপনি {score} পয়েন্ট অর্জন করেছেন।"
+      },
+      Punjabi: {
+        welcome: "ਟਰੂਥਵਰਸ AI ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਚੱਕਰ ਘੁਮਾਉਣ ਲਈ ਤਿਆਰ ਹੋ ਜਾਓ!",
+        winner_selected: "{name} ਦੀ ਚੋਣ ਕੀਤੀ ਗਈ ਹੈ। ਚੁਣੌਤੀ ਸ਼ੁਰੂ ਹੋਣ ਦਿਓ!",
+        time_expired: "ਇਸ ਚੁਣੌਤੀ ਦਾ ਸਮਾਂ ਸਮਾਪਤ ਹੋ ਗਿਆ ਹੈ!",
+        pose_verified: "ਪੋਜ਼ ਦੀ ਸਫਲਤਾਪੂਰਵਕ ਪੁਸ਼ਟੀ ਹੋ ਗਈ ਹੈ! ਬੋਨਸ ਅੰਕ ਪ੍ਰਾਪਤ ਹੋਏ!",
+        scan_skipped: "ਕੈਮਰਾ ਸਕੈਨ ਪੁਸ਼ਟੀਕਰਨ ਛੱਡ ਦਿੱਤਾ ਗਿਆ।",
+        arcade_complete: "ਆਰਕੇਡ ਪੂਰਾ! ਤੁਸੀਂ {score} ਸਕੋਰ ਲਈ ਚੀਜ਼ਾਂ ਪੌਪ ਕੀਤੀਆਂ।",
+        pass_turn: "ਵਾਰੀ ਛੱਡ ਦਿੱਤੀ ਗਈ। ਵਾਪਸ ਲਾਬੀ ਵਿੱਚ ਚੱਲੋ।",
+        task_verified: "ਕਾਰਜ ਦੀ ਪੁਸ਼ਟੀ ਹੋਈ! ਵਧਾਈ ਹੋਵੇ {name}, ਤੁਸੀਂ {score} ਅੰਕ ਪ੍ਰਾਪਤ ਕੀਤੇ।"
+      },
+      Odia: {
+        welcome: "ଟ୍ରୁଥଭର୍ସ AI କୁ ସ୍ୱାଗତ। ଚକ ଘୂରାଇବା ପାଇଁ ପ୍ରସ୍ତୁତ ହୁଅନ୍ତୁ!",
+        winner_selected: "{name} ଚୟନ ହୋଇଛନ୍ତି। ଚ୍ୟାଲେଞ୍ಜ ଆରମ୍ଭ ହେଉ!",
+        time_expired: "ଏହି ଚ୍ୟାଲେଞ୍ଜ ପାଇଁ ସମୟ ସମାପ୍ତ ହେଲା!",
+        pose_verified: "ଭଙ୍ଗୀ ସଫଳତାର ସହ ଯାଞ୍ચ ହେଲା! ବୋନସ୍ ପଏଣ୍ଟ ମିଳିଲା!",
+        scan_skipped: "କ୍ୟାମେରା ସ୍କାନ୍ ଯାଞ୍ଚକୁ ଏଡ଼ାଇ ଦିଆଗଲା।",
+        arcade_complete: "ଆର୍କେଡ୍ ସମ୍ପୂର୍ଣ୍ଣ! ଆପଣ {score} ସ୍କୋର ପାଇଁ ବସ୍ତୁଗୁଡ଼ିକୁ ପପ୍ କଲେ।",
+        pass_turn: "ପାଳି ଏଡ଼ାଇ ଦିଆଗଲା। ଫେରିଯାଆନ୍ତು ଲବିକୁ।",
+        task_verified: "କାର୍ଯ୍ୟ ଯାଞ୍ಚ ହେଲା! ଅଭିნନ୍ଦନ {name}, ଆପଣ {score} ପଏଣ୍ଟ ପାଇଲେ।"
+      }
+    };
+
+    // Multilingual Speech Assistant Command Mappings
+    const VOICE_COMMANDS = {
+      English: {
+        spin: ["spin", "wheel", "rotate"],
+        truth: ["truth"],
+        dare: ["dare"],
+        complete: ["complete", "completed", "done"],
+        pass: ["pass", "skip"],
+        read: ["read", "speak", "pronounce"]
+      },
+      Kannada: {
+        spin: ["ತಿರುಗಿಸು", "ಚಕ್ರ", "ತಿರುಗು", "spin", "wheel"],
+        truth: ["ಸತ್ಯ", "truth"],
+        dare: ["ಧೈರ್ಯ", "dare"],
+        complete: ["ಪೂರ್ಣ", "ಮುಗಿದಿದೆ", "complete", "completed", "done"],
+        pass: ["ಮುಂದೆ", "ಬಿಡು", "pass", "skip"],
+        read: ["ಓದು", "ಹೇಳು", "read", "speak"]
+      },
+      Hindi: {
+        spin: ["घुमाओ", "चक्र", "स्पिन", "spin", "wheel"],
+        truth: ["सच", "सत्य", "truth"],
+        dare: ["साहस", "डेयर", "dare"],
+        complete: ["पूरा", "पूर्ण", "हो गया", "done", "complete", "completed"],
+        pass: ["छोड़ो", "पास", "pass", "skip"],
+        read: ["पढ़ो", "बोलो", "read", "speak"]
+      },
+      Telugu: {
+        spin: ["తిప్పు", "చక్రం", "spin", "wheel"],
+        truth: ["నిజం", "సత్యం", "truth"],
+        dare: ["ధైర్యం", "dare"],
+        complete: ["పూర్తయింది", "అయింది", "done", "complete", "completed"],
+        pass: ["వదిలేయ్", "పాస్", "pass", "skip"],
+        read: ["చదువు", "చెప్పు", "read", "speak"]
+      },
+      Tamil: {
+        spin: ["சுழற்று", "சக்கரம்", "spin", "wheel"],
+        truth: ["உண்மை", "truth"],
+        dare: ["தைரியம்", "dare"],
+        complete: ["முடிந்தது", "முடி", "done", "complete", "completed"],
+        pass: ["விடு", "பாஸ்", "pass", "skip"],
+        read: ["படி", "சொல்", "read", "speak"]
+      },
+      Malayalam: {
+        spin: ["തിരിക്കുക", "ചക്രം", "spin"],
+        truth: ["സത്യം", "truth"],
+        dare: ["ധൈര്യം", "dare"],
+        complete: ["കഴിഞ്ഞു", "പൂർത്തിയായി", "done", "complete"],
+        pass: ["വിട്ടു കളയുക", "പാസ്", "pass"],
+        read: ["വായിക്കുക", "പറയുക", "read", "speak"]
+      },
+      Marathi: {
+        spin: ["फिरवा", "चक्र", "spin"],
+        truth: ["सत्य", "सच", "truth"],
+        dare: ["डेअर", "साहस", "dare"],
+        complete: ["पूर्ण", "झाले", "done", "complete"],
+        pass: ["सोडा", "पास", "pass", "skip"],
+        read: ["वाचा", "बोला", "read", "speak"]
+      },
+      Gujarati: {
+        spin: ["ફેરવો", "ચક્ર", "spin"],
+        truth: ["સત્ય", "સાચું", "truth"],
+        dare: ["સાહस", "dare"],
+        complete: ["पूर्ण", "થઈ ગયું", "done", "complete"],
+        pass: ["છોડો", "પાસ", "pass", "skip"],
+        read: ["વાંચો", "બોલો", "read", "speak"]
+      },
+      Bengali: {
+        spin: ["ঘোরাও", "চাকা", "spin"],
+        truth: ["সত্য", "truth"],
+        dare: ["সাহস", "dare"],
+        complete: ["সম্পন্ন", "হয়ে গেছে", "done", "complete"],
+        pass: ["বাদ দাও", "পাস", "pass", "skip"],
+        read: ["পড়ো", "বলো", "read", "speak"]
+      },
+      Punjabi: {
+        spin: ["ਘੁਮਾਓ", "ਚੱਕਰ", "spin"],
+        truth: ["ਸੱਚ", "truth"],
+        dare: ["ਹਿੰਮਤ", "dare"],
+        complete: ["ਪੂਰਾ", "ਹੋ ਗਿਆ", "done", "complete"],
+        pass: ["ਛੱਡੋ", "ਪਾਸ", "pass", "skip"],
+        read: ["ਪੜ੍ਹੋ", "ਬੋਲੋ", "read", "speak"]
+      },
+      Odia: {
+        spin: ["ଘୂରାଅ", "ଚକ", "spin"],
+        truth: ["ସତ୍ୟ", "truth"],
+        dare: ["ସାହସ", "dare"],
+        complete: ["ସମ୍ପୂର୍ଣ୍ଣ", "ହେଇଗଲା", "done", "complete"],
+        pass: ["ଛାଡ଼ିଦିଅ", "ପାସ୍", "pass", "skip"],
+        read: ["ପଢ଼", "କୁହ", "read", "speak"]
+      }
+    };
+
+    function matchVoiceCommand(transcript, commandKey) {
+      const currentLang = currentLanguageSetting || "English";
+      const englishSet = VOICE_COMMANDS.English[commandKey] || [];
+      const localizedSet = (VOICE_COMMANDS[currentLang] && VOICE_COMMANDS[currentLang][commandKey]) || [];
+      const combined = [...englishSet, ...localizedSet];
+      
+      return combined.some(keyword => transcript.includes(keyword.toLowerCase()));
+    }
+
+    // Phonetic translations block for screen reader fallback on English voice
+    const ANNOUNCEMENT_PHONETIC_TRANSLATIONS = {
+      English: {
+        welcome: "Welcome to Truthverse AI. Ready to spin the wheel!",
+        winner_selected: "{name} was selected. Let the challenge begin!",
+        time_expired: "Time expired for this challenge!",
+        pose_verified: "Posture successfully verified! Bonus points gained!",
+        scan_skipped: "Camera scan verification skipped.",
+        arcade_complete: "Arcade complete! You popped objects for a high score of {score}.",
+        pass_turn: "Turn skipped. Back to the celestial lobby.",
+        task_verified: "Task verified! Congratulations {name}, you gained {score} points."
+      },
+      Kannada: {
+        welcome: "Truthverse AI ge suswaagatha. Chakravanna thirugisalu siddharagi!",
+        winner_selected: "{name} aaykeyagiddare. Savalu prarambhavagali!",
+        time_expired: "Ee savalina samaya meeride!",
+        pose_verified: "Bhangi yashasviyagi dhrudhikarisalagide! Bonus ankagalanna gelisalagide!",
+        scan_skipped: "Camera scan dhrudhikaranavanna bittu-bidalagide.",
+        arcade_complete: "Arcade purnagondide! Neevu {score} ankagalondige vasthugalanna odediddiri.",
+        pass_turn: "Saradi bidalagide. Matte lobbyge thirugi.",
+        task_verified: "Karya dhrudhikarisalpatta! Abhinandanegalu {name}, neevu {score} ankagalanna galisiddiri."
+      },
+      Hindi: {
+        welcome: "Truthverse AI mein aapka swagat hai. Pahiya ghumane ke liye taiyar ho jaiye!",
+        winner_selected: "{name} ko chuna gaya hai. Chunouti shuru hone dein!",
+        time_expired: "Is chunouti ka samay samapt ho gaya hai!",
+        pose_verified: "Mudra safaltapurvak satyapit ki gayi! Bonus ank prapt hue!",
+        scan_skipped: "Camera scan satyapan chhod diya gaya.",
+        arcade_complete: "Arcade pura hua! Aapne {score} ke high score ke liye vastuon ko pop kiya.",
+        pass_turn: "Baari chhod di gayi. Vapas lobby mein chalein.",
+        task_verified: "Karya satyapit! Badhai ho {name}, aapne {score} ank prapt kiye."
+      },
+      Telugu: {
+        welcome: "Truthverse AI ki swagatham. Chakram thippadaniki siddhanga undandi!",
+        winner_selected: "{name} empikayyaru. Savalunu prarambhinchanivvandi!",
+        time_expired: "Ee savaluku samayam mugisindi!",
+        pose_verified: "Bhangima vijayavanthanga dhruveekarinchabadindi! Bonus pointlu vachayi!",
+        scan_skipped: "Camera scan dhruveekarana dhataveyabadindi.",
+        arcade_complete: "Arcade poorthayindi! Meeru {score} score kosam objects ni pop chesaru.",
+        pass_turn: "Vantu dhataveyabadindi. Thirigi lobbyki cherukondi.",
+        task_verified: "Karyam dhruveekarinchebadindi! Abhinandanalu {name}, meeru {score} pointlu sadhincharu."
+      },
+      Tamil: {
+        welcome: "Truthverse AI kku ungalai varaverkirom. Sakkarathai suzhatra thayaraagungal!",
+        winner_selected: "{name} therdhedukkappattar. Saval thodangattum!",
+        time_expired: "Indha savalukkana neram mudindhadhu!",
+        pose_verified: "Thoronai vetriyaga saribarkkapattadhu! Bonus pulligal perappattana!",
+        scan_skipped: "Camera scan saribarpu thavirkkapattadhu.",
+        arcade_complete: "Arcade mudindhadhu! Neengal {score} madhippennudan porutkalai udaithirgal.",
+        pass_turn: "Murai thavirkkapattadhu. Meendum lobbykku sellavum.",
+        task_verified: "Vilayattu saribarkkapattadhu! Vaazhthugal {name}, neengal {score} pulligalai petreergal."
+      },
+      Malayalam: {
+        welcome: "Truthverse AI-lekku swagatham. Chakram thirikkan thayaragu!",
+        winner_selected: "{name} thirandhedukkappettu. Velluvili aarambhikkate!",
+        time_expired: "Ee velluviliyude samayam kazhinju!",
+        pose_verified: "Bhavom vijayagaramaayi sthirikkari-chu! Bonus pointukal labhichu!",
+        scan_skipped: "Camera scan sthirikkaranam thavirkkappettu.",
+        arcade_complete: "Arcade poorthiyaayi! {score} score-inaayi ningal objects pop cheythu.",
+        pass_turn: "Oozham thavirkkappettu. Veendum lobby-ilekku madanguka.",
+        task_verified: "Challenge sthirikkari-chu! Abhinandanam {name}, ningalkku {score} pointukal labhichu."
+      },
+      Marathi: {
+        welcome: "Truthverse AI madhye aaple swagat aahe. Chakra phiravanyasathi tayar vha!",
+        winner_selected: "{name} chi nivad jhali aahe. Aavhan shuru karuya!",
+        time_expired: "Ya aavhanachi vel sampli aahe!",
+        pose_verified: "Pose yashasviri-tya satyapit jhali! Bonus gun minale!",
+        scan_skipped: "Camera scan satyapan vagalle gele.",
+        arcade_complete: "Arcade purna! Tumhi {score} gunansathi vastu fodlya.",
+        pass_turn: "Baari vagalli. Parat lobby madhye jauya.",
+        task_verified: "Karya satyapit! Abhinandan {name}, tumhala {score} gun minale."
+      },
+      Gujarati: {
+        welcome: "Truthverse AI ma aapnu swagat chhe. Chakra pheravva mate tayar thai jao!",
+        winner_selected: "{name} ni pasandgi karva ma aavi chhe. Padkar shuru thava do!",
+        time_expired: "Aa padkar mate samay puro thai gayo chhe!",
+        pose_verified: "Pose safaltapurvak chakasi levama aavyo chhe! Bonus point malya!",
+        scan_skipped: "Camera scan chakasi chhodvama aavi.",
+        arcade_complete: "Arcade purna! Tame {score} score mate vastuon todya.",
+        pass_turn: "Vaaro chhodvama aavyo. Paacha lobbyma jao.",
+        task_verified: "Karya chakasi levama aavyu! Abhinandan {name}, tame {score} point melya."
+      },
+      Bengali: {
+        welcome: "Truthverse AI-te aapnake swagato. Chaka ghoranor jonyo prostut hon!",
+        winner_selected: "{name} nirbachito hoyechen. Challenge shuru hok!",
+        time_expired: "Ei challenge-er somoy sesh hoye geche!",
+        pose_verified: "Bhongi safalvabe jachai kora hoyeche! Bonus point peyechen!",
+        scan_skipped: "Camera scan jachaikoron eriye jaoa hoyeche.",
+        arcade_complete: "Arcade sompurnro! Aapni {score} score-er jonyo bostu pop korechen.",
+        pass_turn: "Daan eriye jaoa hoyeche. Lobbyte phire jaan.",
+        task_verified: "Kaaj jachai kora hoyeche! Abhinandan {name}, aapni {score} point peyechen."
+      },
+      Punjabi: {
+        welcome: "Truthverse AI vich tuhada swagat hai. Chakkar ghuman lyi tayar ho jao!",
+        winner_selected: "{name} di chon kiti gayi hai. Chunouti shuru hon deo!",
+        time_expired: "Is chunouti da samay samapt ho gaya hai!",
+        pose_verified: "Pose di safaltapurvak pushti ho gayi hai! Bonus ank prapt hoye!",
+        scan_skipped: "Camera scan pushtikaran chhadd dita gaya.",
+        arcade_complete: "Arcade poora hoya! Tusi {score} score lyi chizan pop kitian.",
+        pass_turn: "Vaari chhadd diti gayi. Vapas lobby vich challo.",
+        task_verified: "Karaj di pushti ho gayi! Vadhai hove {name}, tusi {score} ank prapt kite."
+      },
+      Odia: {
+        welcome: "Truthverse AI ku स्वागत. Chaka ghuriba pain prastuta huantu!",
+        winner_selected: "{name} chayana hoichhanti. Challenge aarambha heu!",
+        time_expired: "Ehi challenge pain samaya samapta hela!",
+        pose_verified: "Bhangira saphalatara saha janch hela! Bonus point milila!",
+        scan_skipped: "Camera scan janchaku edai diagala.",
+        arcade_complete: "Arcade sampurna! Aapana {score} score pain bastugudiku pop kale.",
+        pass_turn: "Paali edai diagala. Pheri jaantu lobbyku.",
+        task_verified: "Karjya janch hela! Abhinandan {name}, aapana {score} point paile."
+      }
+    };
+
+    // Helper to detect if a specific language voice pack is loaded in the browser
+    function hasVoiceForLang(langCode) {
+      if (!("speechSynthesis" in window)) return false;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return false;
+      const targetPrefix = langCode.toLowerCase().split('-')[0];
+      return voices.some(v => v.lang.toLowerCase().startsWith(targetPrefix) || v.lang.toLowerCase().includes(targetPrefix));
+    }
+
+    // Helper to search and set correct native voice for target language
+    function setUtteranceVoice(utterance, langCode) {
+      if (!("speechSynthesis" in window)) return;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return;
+      
+      const targetLang = langCode.toLowerCase();
+      const targetPrefix = targetLang.split('-')[0];
+      
+      // 1. Try exact match
+      let voice = voices.find(v => v.lang.toLowerCase() === targetLang);
+      if (voice) {
+        utterance.voice = voice;
+        return;
+      }
+      
+      // 2. Try prefix match (e.g. "hi" for hi-IN)
+      voice = voices.find(v => v.lang.toLowerCase().startsWith(targetPrefix));
+      if (voice) {
+        utterance.voice = voice;
+        return;
+      }
+      
+      // 3. Try includes match
+      voice = voices.find(v => v.lang.toLowerCase().includes(targetPrefix));
+      if (voice) {
+        utterance.voice = voice;
+        return;
+      }
+    }
+
+        // Speak safety helper to pause SpeechRecognition during speech synthesis and prevent self-triggering
+    function speakSafe(utterance) {
+      if (!("speechSynthesis" in window)) return;
+      
+      utterance.onstart = () => {
+        isSpeakingNow = true;
+        if (voiceRecognition && isSpeechListening) {
+          try {
+            voiceRecognition.stop(); // Stop gracefully to prevent self-hearing
+          } catch(e) {
+            console.warn("Error stopping voiceRecognition during TTS start:", e);
+          }
+        }
+      };
+      
+      const resumeSpeech = () => {
+        isSpeakingNow = false;
+        if (voiceRecognition && isSpeechListeningRequested && !isSpeechListening) {
+          setTimeout(() => {
+            if (isSpeechListeningRequested && !isSpeechListening && !window.speechSynthesis.speaking && !isSpeakingNow) {
+              try {
+                voiceRecognition.start();
+              } catch(e) {
+                console.warn("Error restarting voiceRecognition after TTS end:", e);
+              }
+            }
+          }, 600); // 600ms grace period to allow microphone to clear
+        }
+      };
+
+      utterance.onend = resumeSpeech;
+      utterance.onerror = resumeSpeech;
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // LOCAL SPEECH TRANSLATION SPEAKERS
+    function speakGlobalAnnouncement(key, variables = {}) {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      
+      const currentLang = currentLanguageSetting || "English";
+      const langCode = getLocalVoiceLangCode();
+      const hasNative = hasVoiceForLang(langCode);
+      
+      let text = "";
+      // If we have a native voice for the selected language, use native script. Otherwise fallback to phonetic Latin script.
+      if (currentLang === "English" || hasNative) {
+        const translations = ANNOUNCEMENT_TRANSLATIONS[currentLang] || ANNOUNCEMENT_TRANSLATIONS.English;
+        text = translations[key] || key;
+      } else {
+        const translations = ANNOUNCEMENT_PHONETIC_TRANSLATIONS[currentLang] || ANNOUNCEMENT_PHONETIC_TRANSLATIONS.English;
+        text = translations[key] || key;
+      }
+      
+      // Replace dynamic variables
+      for (const [vKey, vVal] of Object.entries(variables)) {
+        text = text.replace(`{${vKey}}`, vVal);
+      }
+
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = langCode;
+      setUtteranceVoice(u, langCode);
+      speakSafe(u);
+    }
+
+        function speakLocalizedTurn(playerName) {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      
+      const currentLang = currentLanguageSetting || "English";
+      const langCode = getLocalVoiceLangCode();
+      const hasNative = hasVoiceForLang(langCode);
+      
+      let text = "";
+      if (currentLang === "English") {
+        text = `${playerName}, it is your turn! Select Truth or Select Dare.`;
+      } else if (hasNative) {
+        if (currentLang === "Hindi") {
+          text = `${playerName}, आपकी बारी है! सच या साहस चुनें।`;
+        } else if (currentLang === "Kannada") {
+          text = `${playerName}, ನಿಮ್ಮ ಸರದಿ! ಸತ್ಯ ಅಥವಾ ಧೈರ್ಯವನ್ನು ಆರಿಸಿ.`;
+        } else if (currentLang === "Telugu") {
+          text = `${playerName}, మీ వంతు! నిజం లేదా ధైర్యం ఎంచుకోండి.`;
+        } else if (currentLang === "Tamil") {
+          text = `${playerName}, உங்கள் முறை! உண்மையைத் தேர்ந்தெடு அல்லது தைரியத்தைத் தேர்ந்தெடு.`;
+        } else if (currentLang === "Malayalam") {
+          text = `${playerName}, നിങ്ങളുടെ ഊഴമാണ്! സത്യം അല്ലെങ്കിൽ ധൈര്യം തിരഞ്ഞെടുക്കുക.`;
+        } else if (currentLang === "Marathi") {
+          text = `${playerName}, तुमची बारी आहे! सत्य किंवा डेअर निवडा.`;
+        } else if (currentLang === "Gujarati") {
+          text = `${playerName}, તમારો વારો છે! સત્ય અથવા સાહસ પસંદ કરો.`;
+        } else if (currentLang === "Bengali") {
+          text = `${playerName}, আপনার দান! সত্য বা সাহস নির্বাচন করুন।`;
+        } else if (currentLang === "Punjabi") {
+          text = `${playerName}, ਤੁਹਾਡੀ ਵਾਰੀ ਹੈ! ਸੱਚ ਜਾਂ ਹਿੰਮਤ ਚੁਣੋ।`;
+        } else if (currentLang === "Odia") {
+          text = `${playerName}, ଆପଣଙ୍କ ପାଳି! ସତ୍ୟ କିମ୍ବା ସାହସ ଚୟନ କରନ୍ତು।`;
+        } else {
+          text = `${playerName}, it is your turn! choose truth or dare.`;
+        }
+      } else {
+        if (currentLang === "Hindi") {
+          text = `${playerName}, aapki baari hai! Sach ya saahas chune.`;
+        } else if (currentLang === "Kannada") {
+          text = `${playerName}, nimma saradhi! Sathya athava dhairya aayke madi.`;
+        } else if (currentLang === "Telugu") {
+          text = `${playerName}, mee vantu! Nijam leda dhairyam emchukondi.`;
+        } else if (currentLang === "Tamil") {
+          text = `${playerName}, ungal murai! Unmai allathu dhairiyam therndhedu.`;
+        } else if (currentLang === "Malayalam") {
+          text = `${playerName}, ningalude oozhamanu! Sathyam allathu dhairyam thirandhedukkuka.`;
+        } else if (currentLang === "Marathi") {
+          text = `${playerName}, tumchi baari aahe! Satya kinva dare nivda.`;
+        } else if (currentLang === "Gujarati") {
+          text = `${playerName}, tamaro vaaro chhe! Satya athava saahas pasand karo.`;
+        } else if (currentLang === "Bengali") {
+          text = `${playerName}, aapnaar daan! Satya baa saahas nirbachan korun.`;
+        } else if (currentLang === "Punjabi") {
+          text = `${playerName}, tvaadi vaari hai! Sach yaa himmat chuno.`;
+        } else if (currentLang === "Odia") {
+          text = `${playerName}, aapananka paali! Satya kimba saahasa chayana karantu.`;
+        } else {
+          text = `${playerName}, it is your turn! choose truth or dare.`;
+        }
+      }
+
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = langCode;
+      setUtteranceVoice(u, langCode);
+      speakSafe(u);
+    }
+        function speakLocalizedChallenge(playerName, task, phoneticTask = "") {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+
+      const currentLang = currentLanguageSetting || "English";
+      const langCode = getLocalVoiceLangCode();
+      const hasNative = hasVoiceForLang(langCode);
+
+      let textToSpeak = "";
+      
+      if (currentLang === "English") {
+        textToSpeak = `${playerName}, here is your challenge: ${task}. Say completed when you are done!`;
+      } else if (hasNative) {
+        if (currentLang === "Hindi") {
+          textToSpeak = `${playerName}, आपकी चुनौती यहाँ है: ${task}. पूरा होने पर हो गया कहें!`;
+        } else if (currentLang === "Kannada") {
+          textToSpeak = `${playerName}, ನಿಮ್ಮ ಸವಾಲು ಇಲ್ಲಿದೆ: ${task}. ನೀವು ಪೂರ್ಣಗೊಳಿಸಿದಾಗ ಮುಗಿದಿದೆ ಎಂದು ಹೇಳಿ!`;
+        } else if (currentLang === "Telugu") {
+          textToSpeak = `${playerName}, మీ సవాలు ఇక్కడ ఉంది: ${task}. పూర్తయిన తర్వాత పూర్తయింది అని చెప్పండి!`;
+        } else if (currentLang === "Tamil") {
+          textToSpeak = `${playerName}, உங்கள் சவால் இதோ: ${task}. முடிந்ததும் முடிந்தது என்று சொல்லுங்கள்!`;
+        } else if (currentLang === "Malayalam") {
+          textToSpeak = `${playerName}, നിങ്ങളുടെ വെല്ലുവിളി ഇതാ: ${task}. കഴിഞ്ഞാൽ കഴിഞ്ഞു എന്ന് പറയുക!`;
+        } else if (currentLang === "Marathi") {
+          textToSpeak = `${playerName}, तुमचे आव्हान येथे आहे: ${task}. पूर्ण झाल्यावर झाले म्हणा!`;
+        } else if (currentLang === "Gujarati") {
+          textToSpeak = `${playerName}, તમારો પડકાર અહીં છે: ${task}. પૂરું થયા પછી થઈ ગયું બોલો!`;
+        } else if (currentLang === "Bengali") {
+          textToSpeak = `${playerName}, আপনার চ্যালেঞ্জ এখানে: ${task}. সম্পন্ন হলে হয়ে গেছে বলুন!`;
+        } else if (currentLang === "Punjabi") {
+          textToSpeak = `${playerName}, ਤੁਹਾਡੀ ਚੁਣੌਤੀ ਇੱਥੇ ਹੈ: ${task}. ਪੂਰਾ ਹੋਣ 'ਤੇ ਹੋ ਗਿਆ ਬੋਲੋ!`;
+        } else if (currentLang === "Odia") {
+          textToSpeak = `${playerName}, ଆପଣଙ୍କ ଚ୍ୟାଲେଞ୍ଜ ଏଠାରେ ଅଛି: ${task}. ସମ୍පୂର୍ଣ୍ණ ହେલે ହେଇଗଲା କੁହନ୍ତು!`;
+        } else {
+          textToSpeak = `${playerName}, here is your challenge: ${task}. Say completed when you are done!`;
+        }
+      } else {
+        const pt = phoneticTask || task;
+        if (currentLang === "Hindi") {
+          textToSpeak = `${playerName}, aapki chunouti yahaan hai: ${pt}. Poora hone par ho gaya kahein!`;
+        } else if (currentLang === "Kannada") {
+          textToSpeak = `${playerName}, nimma chunouti illide: ${pt}. Meevu poornagolisidaga mugidide endu heli!`;
+        } else if (currentLang === "Telugu") {
+          textToSpeak = `${playerName}, mee savalu ikkada undi: ${pt}. Poorthayina tharvatha poorthayindi ani cheppandi!`;
+        } else if (currentLang === "Tamil") {
+          textToSpeak = `${playerName}, ungal saval idho: ${pt}. Mudindhadhum mudindhadhu endru sollungal!`;
+        } else if (currentLang === "Malayalam") {
+          textToSpeak = `${playerName}, ningalude velluvili idha: ${pt}. Kazhinjal kazhinju ennu parayuka!`;
+        } else if (currentLang === "Marathi") {
+          textToSpeak = `${playerName}, tumche aavhan yethe aahe: ${pt}. Purna jhalyavar jhale mhana!`;
+        } else if (currentLang === "Gujarati") {
+          textToSpeak = `${playerName}, tamaro padkar ahi chhe: ${pt}. Puru thaya pachhi thai gayu bolo!`;
+        } else if (currentLang === "Bengali") {
+          textToSpeak = `${playerName}, aapnaar challenge ekhane: ${pt}. Somponno hole hoye geche bolun!`;
+        } else if (currentLang === "Punjabi") {
+          textToSpeak = `${playerName}, tvaadi chunouti ithe hai: ${pt}. Poora hon te ho gaya bolo!`;
+        } else if (currentLang === "Odia") {
+          textToSpeak = `${playerName}, aapananka challenge ethare achhi: ${pt}. Sampurna hele heigala kuhantu!`;
+        } else {
+          textToSpeak = `${playerName}, here is your challenge: ${pt}. Say completed when you are done!`;
+        }
+      }
+
+      const u = new SpeechSynthesisUtterance(textToSpeak);
+      u.lang = langCode;
+      setUtteranceVoice(u, langCode);
+      speakSafe(u);
+    }
+    function getLocalVoiceLangCode() {
+      switch(currentLanguageSetting) {
+        case "Hindi": return "hi-IN";
+        case "Kannada": return "kn-IN";
+        case "Telugu": return "te-IN";
+        case "Tamil": return "ta-IN";
+        case "Malayalam": return "ml-IN";
+        case "Marathi": return "mr-IN";
+        case "Gujarati": return "gu-IN";
+        case "Bengali": return "bn-IN";
+        case "Punjabi": return "pa-IN";
+        case "Odia": return "or-IN";
+        default: return "en-US";
+      }
+    }
+
+
+    // API CHALLENGE GENERATOR INVOCATION
+    async function requestChallenge(mode) {
+      const overlay = document.getElementById("challenge-loading-overlay");
+      overlay.classList.remove("hidden");
+
+      const category = document.getElementById("select-category").value;
+      const difficulty = document.getElementById("select-difficulty").value;
+
+      try {
+        const response = await fetch("/api/challenge/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: mode,
+            category: category,
+            language: currentLanguageSetting,
+            difficulty: difficulty
+          })
+        });
+
+        const data = await response.json();
+        currentChallenge = data;
+        
+        // Hide overlay & setup UI
+        overlay.classList.add("hidden");
+        document.getElementById("challenge-mode-selection").classList.add("hidden");
+        document.getElementById("challenge-active-panel").classList.remove("hidden");
+
+        // Set values
+        document.getElementById("badge-mode").innerText = data.mode;
+        document.getElementById("badge-difficulty").innerText = data.difficulty;
+        document.getElementById("challenge-prompt-text").innerText = `"${data.challenge}"`;
+        document.getElementById("challenge-hint-text").innerText = data.funnyHint || "Be courageous!";
+        
+        // Timer Reset
+        timeRemaining = parseInt(data.estimatedTime) || 45;
+        document.getElementById("challenge-timer").innerText = `${timeRemaining}s`;
+        startTimerCountdown();
+
+        // Populate Speech suggestions
+        const chipsContainer = document.getElementById("voice-suggestions-list");
+        chipsContainer.innerHTML = "";
+        const suggestions = data.voiceSuggestions || ["Completed", "Pass Turn", "Next"];
+        suggestions.forEach(v => {
+          chipsContainer.innerHTML += `
+            <span onclick="triggerVoiceCommand('${v}')" class="text-[10px] bg-slate-950 hover:bg-indigo-950/40 cursor-pointer border border-slate-800 hover:border-indigo-500 text-slate-400 hover:text-indigo-300 font-mono px-2.5 py-1 rounded-full uppercase transition-colors">
+              "${v}"
+            </span>
+          `;
+        });
+
+        // Trigger Canvas Procedural math background script
+        renderProceduralCanvasBackground(data.animation.javascript);
+
+        // Fetch AI Artwork generator
+        triggerArtGeneration(data.illustrationPrompt);
+
+        // Web Camera Scan & Game Interactive details (Dares only)
+        if (mode === "Dare") {
+          document.getElementById("widget-arcade").classList.remove("hidden");
+          document.getElementById("pose-goal-text").innerText = data.cameraVerification.expectedPose || "smiling";
+          document.getElementById("game-title-text").innerText = data.miniGame.name || "Balloons Burst";
+          document.getElementById("game-instructions-text").innerText = data.miniGame.instructions || "Click elements fast!";
+          
+          // Switch to default Camera tab
+          switchArcadeTab("camera");
+        } else {
+          document.getElementById("widget-arcade").classList.add("hidden");
+        }
+
+        // Announce Challenge
+        speakLocalizedChallenge(selectedPlayer.name, data.challenge, data.phoneticChallenge);
+
+      } catch (err) {
+        console.error("Failed to generate challenge", err);
+        overlay.classList.add("hidden");
+        alert("Cosmic link snapped! Retrying challenge generator.");
+      }
+    }
+
+    // CANVAS PROCEDURAL MATH RUNTIME LOOP
+    function renderProceduralCanvasBackground(jsCode) {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      
+      const canvas = document.getElementById("animation-canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Handle ResizeObserver to keep canvas high-fidelity
+      const resize = () => {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      };
+      window.addEventListener("resize", resize);
+      resize();
+
+      // Safely parse dynamically generated canvas javascript from Gemini
+      try {
+        // Construct code block inside a function, binding local scope 'canvas' and 'ctx'
+        runningAnimationFunc = new Function("canvas", "ctx", "requestAnimationFrame", "cancelAnimationFrame", `
+          let animationFrameId = null;
+          const originalRAF = requestAnimationFrame;
+          const originalCAF = cancelAnimationFrame;
+          
+          // Override to hook cancel
+          window._activeCanvasRAF = function(cb) {
+            animationFrameId = originalRAF(cb);
+            return animationFrameId;
+          };
+          window._activeCanvasCAF = function(id) {
+            originalCAF(id);
+          };
+
+          ${jsCode}
+        `);
+        
+        runningAnimationFunc(canvas, ctx, (cb) => {
+          animationFrameId = requestAnimationFrame(cb);
+          return animationFrameId;
+        }, (id) => {
+          cancelAnimationFrame(id);
+        });
+
+      } catch (e) {
+        console.warn("Custom procedural script failed initialization, running elegant fallback:", e);
+        // Fallback elegant starfield animation
+        let stars = [];
+        for(let i=0; i<40; i++) {
+          stars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*2+1, speed: Math.random()*0.5+0.1 });
+        }
+        function drawFallback() {
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+          ctx.fillStyle = "rgba(15, 23, 42, 0.4)";
+          ctx.fillRect(0,0,canvas.width,canvas.height);
+          ctx.fillStyle = "#818cf8";
+          stars.forEach(s => {
+            s.y -= s.speed;
+            if (s.y < 0) s.y = canvas.height;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+            ctx.fill();
+          });
+          animationFrameId = requestAnimationFrame(drawFallback);
+        }
+        drawFallback();
+      }
+    }
+
+    // AI ARTWORK GRAPHIC GENERATOR INVOCATION
+    async function triggerArtGeneration(prompt) {
+      const loader = document.getElementById("illustration-loader");
+      const img = document.getElementById("illustration-img");
+      const placeholder = document.getElementById("illustration-placeholder");
+
+      loader.classList.remove("hidden");
+      img.classList.add("hidden");
+      placeholder.classList.add("hidden");
+
+      try {
+        const res = await fetch("/api/challenge/generate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: prompt })
+        });
+        const data = await res.json();
+        
+        loader.classList.add("hidden");
+        if (data.imageUrl) {
+          img.src = data.imageUrl;
+          img.classList.remove("hidden");
+        } else {
+          placeholder.classList.remove("hidden");
+        }
+      } catch (e) {
+        console.warn("Artwork rendering failed fallback triggered:", e);
+        loader.classList.add("hidden");
+        placeholder.classList.remove("hidden");
+      }
+    }
+
+    // TIMED REWARDS ENGINE
+    function startTimerCountdown() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        timeRemaining--;
+        if (timeRemaining <= 0) {
+          clearInterval(countdownInterval);
+          document.getElementById("challenge-timer").innerText = "0s";
+          speakGlobalAnnouncement("time_expired");
+          return;
+        }
+        document.getElementById("challenge-timer").innerText = `${timeRemaining}s`;
+      }, 1000);
+    }
+
+    // READ ALOUD TRIGGER
+    function readAloudChallenge() {
+      if (currentChallenge) {
+        speakLocalizedChallenge(selectedPlayer.name, currentChallenge.challenge, currentChallenge.phoneticChallenge);
+      }
+    }
+
+    // SCORE & VERIFY ACTIONS
+    function completeChallenge() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+      // Compute Scores
+      let basePoints = currentChallenge ? (currentChallenge.score.base || 20) : 20;
+      let poseBonus = claimedBonus.camera ? (currentChallenge.score.creativityBonus || 5) : 0;
+      let speedBonus = (timeRemaining > 20) ? (currentChallenge.score.timeBonus || 5) : 0;
+      let totalEarned = basePoints + poseBonus + speedBonus;
+
+      // Add to player score
+      players = players.map(p => {
+        if (p.id === selectedPlayer.id) {
+          return { ...p, score: p.score + totalEarned };
+        }
+        return p;
+      });
+
+      // Speak Completed Sound
+      speakGlobalAnnouncement("task_verified", { name: selectedPlayer.name, score: totalEarned });
+
+      // Return to Lobby Scoreboard
+      setTimeout(() => {
+        document.getElementById("view-challenge").classList.add("hidden");
+        document.getElementById("view-lobby").classList.remove("hidden");
+        updateLobbyScoreboard();
+        drawLobbySpinningWheel();
+        scrollToTop();
+      }, 1800);
+    }
+
+    function passTurn() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+      speakGlobalAnnouncement("pass_turn");
+      
+      document.getElementById("view-challenge").classList.add("hidden");
+      document.getElementById("view-lobby").classList.remove("hidden");
+      updateLobbyScoreboard();
+      drawLobbySpinningWheel();
+      scrollToTop();
+    }
+
+
+    // ARCADE VIEW TAB SWITCHER
+    function switchArcadeTab(tab) {
+      const tabCamera = document.getElementById("tab-btn-camera");
+      const tabGame = document.getElementById("tab-btn-game");
+      const viewCamera = document.getElementById("arcade-camera-view");
+      const viewGame = document.getElementById("arcade-game-view");
+
+      if (tab === "camera") {
+        tabCamera.className = "bg-slate-900 text-indigo-300 border border-slate-800 py-1.5 rounded-md flex items-center justify-center gap-1.5";
+        tabGame.className = "text-slate-500 hover:text-slate-300 py-1.5 rounded-md flex items-center justify-center gap-1.5";
+        viewCamera.classList.remove("hidden");
+        viewGame.classList.add("hidden");
+        stopMiniGameEngine();
+      } else {
+        tabGame.className = "bg-slate-900 text-rose-300 border border-slate-800 py-1.5 rounded-md flex items-center justify-center gap-1.5";
+        tabCamera.className = "text-slate-500 hover:text-slate-300 py-1.5 rounded-md flex items-center justify-center gap-1.5";
+        viewGame.classList.remove("hidden");
+        viewCamera.classList.add("hidden");
+        stopWebcamStream();
+      }
+    }
+
+
+    // WEBCAM HARDWARE SIMULATED SCANNERS
+    async function verifyPostures() {
+      const video = document.getElementById("webcam-feed");
+      const fallbackHUD = document.getElementById("webcam-fallback");
+      const scanBtn = document.getElementById("verify-scan-btn");
+
+      scanBtn.innerText = "ALIGNING SCANNER...";
+      scanBtn.disabled = true;
+
+      try {
+        // Request actual webcam
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+          video.srcObject = cameraStream;
+          video.classList.remove("hidden");
+          fallbackHUD.classList.add("hidden");
+        }
+      } catch (err) {
+        console.warn("Real hardware camera stream inaccessible, launching high-fidelity holographic projection:", err);
+      }
+
+      // Simulate Pose analyzer count-up
+      simulatedConfidence = 15;
+      document.getElementById("pose-confidence-bar").style.width = "15%";
+      document.getElementById("pose-confidence-text").innerText = "15%";
+
+      if (cameraVerifyTimer) clearInterval(cameraVerifyTimer);
+      cameraVerifyTimer = setInterval(() => {
+        simulatedConfidence += Math.floor(Math.random() * 20) + 10;
+        if (simulatedConfidence >= 95) {
+          simulatedConfidence = 100;
+          clearInterval(cameraVerifyTimer);
+          
+          claimedBonus.camera = true;
+          document.getElementById("pose-confidence-bar").style.width = "100%";
+          document.getElementById("pose-confidence-text").innerText = "100% VERIFIED";
+          
+          scanBtn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> POSE VERIFIED!';
+          scanBtn.className = "flex-1 bg-emerald-950/40 border border-emerald-900 text-emerald-400 text-xs font-bold py-2.5 rounded-xl transition-all uppercase tracking-wide flex items-center justify-center gap-1.5";
+          
+          speakGlobalAnnouncement("pose_verified");
+          lucide.createIcons();
+          stopWebcamStream();
+        } else {
+          document.getElementById("pose-confidence-bar").style.width = `${simulatedConfidence}%`;
+          document.getElementById("pose-confidence-text").innerText = `${simulatedConfidence}%`;
+        }
+      }, 500);
+    }
+
+    function skipScan() {
+      stopWebcamStream();
+      claimedBonus.camera = false;
+      document.getElementById("verify-scan-btn").innerText = "SCAN POSTURE";
+      document.getElementById("verify-scan-btn").className = "flex-1 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 hover:border-indigo-500 text-indigo-300 text-xs font-bold py-2.5 rounded-xl transition-all uppercase tracking-wide flex items-center justify-center gap-1.5";
+      document.getElementById("verify-scan-btn").disabled = false;
+      
+      document.getElementById("pose-confidence-bar").style.width = "0%";
+      document.getElementById("pose-confidence-text").innerText = "0%";
+      speakGlobalAnnouncement("scan_skipped");
+    }
+
+    function stopWebcamStream() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      if (cameraVerifyTimer) clearInterval(cameraVerifyTimer);
+      document.getElementById("webcam-feed").classList.add("hidden");
+      document.getElementById("webcam-fallback").classList.remove("hidden");
+    }
+
+
+    // ARCADE MINI-GAME ENGINE
+    let canvasGame = null;
+    let ctxGame = null;
+    let gameLoopFrame = null;
+
+    function startMiniGame() {
+      document.getElementById("mini-game-intro").classList.add("hidden");
+      document.getElementById("game-score-badge").classList.remove("hidden");
+      document.getElementById("game-timer-badge").classList.remove("hidden");
+
+      canvasGame = document.getElementById("mini-game-canvas");
+      ctxGame = canvasGame.getContext("2d");
+
+      // Set explicit dimensions
+      canvasGame.width = canvasGame.parentElement.clientWidth;
+      canvasGame.height = canvasGame.parentElement.clientHeight;
+
+      miniGameScore = 0;
+      miniGameTimeLeft = 15;
+      isMiniGameRunning = true;
+      miniGameObjects = [];
+
+      document.getElementById("game-score-val").innerText = "0";
+      document.getElementById("game-timer-val").innerText = "15";
+
+      // Mouse/Touch click register
+      canvasGame.addEventListener("mousedown", handleMiniGameClick);
+
+      // Spawn elements
+      for(let i=0; i<8; i++) {
+        spawnArcadeBall();
+      }
+
+      // Game Clock
+      if (miniGameTimer) clearInterval(miniGameTimer);
+      miniGameTimer = setInterval(() => {
+        miniGameTimeLeft--;
+        document.getElementById("game-timer-val").innerText = miniGameTimeLeft;
+        if (miniGameTimeLeft <= 0) {
+          stopMiniGameEngine();
+          claimedBonus.miniGame = true;
+          speakGlobalAnnouncement("arcade_complete", { score: miniGameScore });
+          
+          document.getElementById("mini-game-intro").classList.remove("hidden");
+          document.getElementById("game-instructions-text").innerText = `Complete! Claimed bonus points with score of ${miniGameScore}`;
+        }
+      }, 1000);
+
+      runMiniGameLoop();
+    }
+
+    function spawnArcadeBall() {
+      miniGameObjects.push({
+        x: Math.random() * (canvasGame.width - 40) + 20,
+        y: Math.random() * (canvasGame.height - 40) + 20,
+        r: Math.random() * 15 + 10,
+        dx: (Math.random() - 0.5) * 4,
+        dy: (Math.random() - 0.5) * 4,
+        color: `hsla(${Math.random() * 360}, 90%, 60%, 0.8)`
+      });
+    }
+
+    function runMiniGameLoop() {
+      if (!isMiniGameRunning) return;
+      ctxGame.clearRect(0,0,canvasGame.width,canvasGame.height);
+      ctxGame.fillStyle = "#020617";
+      ctxGame.fillRect(0,0,canvasGame.width,canvasGame.height);
+
+      // Render balls
+      miniGameObjects.forEach(b => {
+        b.x += b.dx;
+        b.y += b.dy;
+
+        // Bounce walls
+        if (b.x - b.r < 0 || b.x + b.r > canvasGame.width) b.dx *= -1;
+        if (b.y - b.r < 0 || b.y + b.r > canvasGame.height) b.dy *= -1;
+
+        ctxGame.beginPath();
+        ctxGame.arc(b.x, b.y, b.r, 0, Math.PI*2);
+        ctxGame.fillStyle = b.color;
+        ctxGame.fill();
+        ctxWheel.strokeStyle = "rgba(255,255,255,0.2)";
+        ctxWheel.lineWidth = 1;
+        ctxGame.stroke();
+      });
+
+      gameLoopFrame = requestAnimationFrame(runMiniGameLoop);
+    }
+
+    function handleMiniGameClick(e) {
+      if (!isMiniGameRunning) return;
+      const rect = canvasGame.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      let hitIndex = -1;
+      for (let i = 0; i < miniGameObjects.length; i++) {
+        const b = miniGameObjects[i];
+        const dist = Math.hypot(clickX - b.x, clickY - b.y);
+        if (dist <= b.r + 5) {
+          hitIndex = i;
+          break;
+        }
+      }
+
+      if (hitIndex > -1) {
+        miniGameObjects.splice(hitIndex, 1);
+        miniGameScore += 5;
+        document.getElementById("game-score-val").innerText = miniGameScore;
+        
+        // Spawn replace
+        spawnArcadeBall();
+        
+        // Sound micro feedback click
+        if (window.AudioContext || window.webkitAudioContext) {
+          const ac = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ac.createOscillator();
+          const gain = ac.createGain();
+          osc.connect(gain);
+          gain.connect(ac.destination);
+          osc.frequency.setValueAtTime(440, ac.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, ac.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.05, ac.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.1);
+          osc.start();
+          osc.stop(ac.currentTime + 0.1);
+        }
+      }
+    }
+
+    function stopMiniGameEngine() {
+      isMiniGameRunning = false;
+      if (gameLoopFrame) cancelAnimationFrame(gameLoopFrame);
+      if (miniGameTimer) clearInterval(miniGameTimer);
+      if (canvasGame) {
+        canvasGame.removeEventListener("mousedown", handleMiniGameClick);
+      }
+      document.getElementById("game-score-badge").classList.add("hidden");
+      document.getElementById("game-timer-badge").classList.add("hidden");
+    }
+
+
+        // AI VOICE CONTROLLER SPEECH RECOGNITIONS
+    function setupSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.warn("Speech recognition not supported in this browser.");
+        return;
+      }
+
+      voiceRecognition = new SpeechRecognition();
+      voiceRecognition.continuous = true;
+      voiceRecognition.interimResults = false;
+      voiceRecognition.lang = getLocalVoiceLangCode();
+
+      voiceRecognition.onstart = () => {
+        isSpeechListening = true;
+        document.getElementById("speech-status-text").innerText = "Voice Control Listening";
+        document.getElementById("speech-status-text").className = "text-[9px] font-mono text-emerald-400 uppercase tracking-wider";
+        document.getElementById("speech-dot").className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
+        document.getElementById("voice-indicator").className = "w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-emerald-950 border border-emerald-500/50 text-emerald-400 font-bold text-xs uppercase tracking-wide cursor-pointer animate-pulse focus:outline-none";
+        if (document.getElementById("voice-btn-label")) {
+          document.getElementById("voice-btn-label").innerText = "Disable Hands-Free Microphone";
+        }
+        if (document.getElementById("voice-mic-icon")) {
+          document.getElementById("voice-mic-icon").className = "w-4 h-4 text-emerald-400 animate-pulse";
+        }
+        document.getElementById("listening-wave").classList.remove("hidden");
+
+        // Sync Play Selector Highlights
+        const manualBtn = document.getElementById("mode-btn-manual");
+        const voiceBtn = document.getElementById("mode-btn-voice");
+        const statusText = document.getElementById("current-mode-status");
+        const descText = document.getElementById("current-mode-description");
+        const iconContainer = document.getElementById("mode-icon-container");
+        const icon = document.getElementById("play-mode-icon");
+        const glowEffect = document.getElementById("mode-glow-effect");
+
+        if (manualBtn) manualBtn.className = BTN_MANUAL_INACTIVE;
+        if (voiceBtn) voiceBtn.className = BTN_VOICE_ACTIVE;
+        if (statusText) statusText.innerText = "Hands-Free Voice Mode Active";
+        if (descText) descText.innerText = 'Microphone live! Say "Spin", "Truth", "Dare", or "Complete".';
+        if (iconContainer) iconContainer.className = "w-12 h-12 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center text-emerald-400 transition-colors";
+        if (icon) {
+          icon.setAttribute("data-lucide", "mic");
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }
+        if (glowEffect) glowEffect.className = "absolute -top-12 -left-12 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none transition-all";
+      };
+
+      voiceRecognition.onerror = (event) => {
+        console.warn("Speech recognition error caught:", event.error);
+        if (event.error === "not-allowed") {
+          isSpeechListeningRequested = false; // User denied or revoked permission
+        }
+      };
+
+      voiceRecognition.onresult = (e) => {
+        if (isSpeakingNow || window.speechSynthesis.speaking) {
+          console.warn("Speech result ignored because TTS engine is speaking.");
+          return;
+        }
+
+        const transcript = e.results[e.results.length - 1][0].transcript.trim().toLowerCase();
+        document.getElementById("speech-subtitle-text").innerText = `Heard Command: "${transcript}"`;
+        
+        // Match phrases using localized multi-lingual commands
+        if (matchVoiceCommand(transcript, "spin")) {
+          if (!document.getElementById("view-lobby").classList.contains("hidden")) {
+            spinWheel();
+          }
+        } else if (matchVoiceCommand(transcript, "truth")) {
+          if (!document.getElementById("view-challenge").classList.contains("hidden") && currentChallenge === null) {
+            requestChallenge("Truth");
+          }
+        } else if (matchVoiceCommand(transcript, "dare")) {
+          if (!document.getElementById("view-challenge").classList.contains("hidden") && currentChallenge === null) {
+            requestChallenge("Dare");
+          }
+        } else if (matchVoiceCommand(transcript, "complete")) {
+          if (!document.getElementById("view-challenge").classList.contains("hidden") && currentChallenge !== null) {
+            completeChallenge();
+          }
+        } else if (matchVoiceCommand(transcript, "pass")) {
+          if (!document.getElementById("view-challenge").classList.contains("hidden") && currentChallenge !== null) {
+            passTurn();
+          }
+        } else if (matchVoiceCommand(transcript, "read")) {
+          if (!document.getElementById("view-challenge").classList.contains("hidden") && currentChallenge !== null) {
+            readAloudChallenge();
+          }
+        }
+      };
+
+      voiceRecognition.onend = () => {
+        isSpeechListening = false;
+        document.getElementById("speech-status-text").innerText = "Voice Control Dormant";
+        document.getElementById("speech-status-text").className = "text-[9px] font-mono text-slate-500 uppercase tracking-wider";
+        document.getElementById("speech-dot").className = "w-1.5 h-1.5 rounded-full bg-slate-700";
+        document.getElementById("voice-indicator").className = "w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-semibold text-xs uppercase tracking-wide transition-all cursor-pointer select-none active:scale-[0.98] focus:outline-none";
+        if (document.getElementById("voice-btn-label")) {
+          document.getElementById("voice-btn-label").innerText = "Enable Hands-Free Microphone";
+        }
+        if (document.getElementById("voice-mic-icon")) {
+          document.getElementById("voice-mic-icon").className = "w-4 h-4 text-emerald-500";
+        }
+        document.getElementById("listening-wave").classList.add("hidden");
+
+        // Sync Play Selector Highlights if voice is not requested anymore
+        if (!isSpeechListeningRequested) {
+          const manualBtn = document.getElementById("mode-btn-manual");
+          const voiceBtn = document.getElementById("mode-btn-voice");
+          const statusText = document.getElementById("current-mode-status");
+          const descText = document.getElementById("current-mode-description");
+          const iconContainer = document.getElementById("mode-icon-container");
+          const icon = document.getElementById("play-mode-icon");
+          const glowEffect = document.getElementById("mode-glow-effect");
+
+          if (manualBtn) manualBtn.className = BTN_MANUAL_ACTIVE;
+          if (voiceBtn) voiceBtn.className = BTN_VOICE_INACTIVE;
+          if (statusText) statusText.innerText = "Manual Controller Active";
+          if (descText) descText.innerText = "Play using clicks and buttons manually";
+          if (iconContainer) iconContainer.className = "w-12 h-12 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-center text-indigo-400 transition-colors";
+          if (icon) {
+            icon.setAttribute("data-lucide", "mouse-pointer");
+            if (typeof lucide !== "undefined") lucide.createIcons();
+          }
+          if (glowEffect) glowEffect.className = "absolute -top-12 -left-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none transition-all";
+        }
+
+        // Continuously restart for Hands-Free mode if requested and not actively reading TTS out loud
+        if (isSpeechListeningRequested && !isSpeakingNow && !window.speechSynthesis.speaking) {
+          setTimeout(() => {
+            if (isSpeechListeningRequested && !isSpeechListening && !isSpeakingNow && !window.speechSynthesis.speaking) {
+              try {
+                voiceRecognition.start();
+              } catch(err) {
+                console.warn("Speech auto-restart failed:", err);
+              }
+            }
+          }, 300);
+        }
+      };
+    }
+
+    function toggleVoiceListening() {
+      if (!voiceRecognition) {
+        alert("Your browser does not support the Web Speech API recognition standard. Try Google Chrome!");
+        return;
+      }
+      if (isSpeechListeningRequested) {
+        setPlayMode('manual');
+      } else {
+        setPlayMode('voice');
+      }
+    }
+
+    function setPlayMode(mode) {
+      const manualBtn = document.getElementById("mode-btn-manual");
+      const voiceBtn = document.getElementById("mode-btn-voice");
+      const statusText = document.getElementById("current-mode-status");
+      const descText = document.getElementById("current-mode-description");
+      const iconContainer = document.getElementById("mode-icon-container");
+      const icon = document.getElementById("play-mode-icon");
+      const glowEffect = document.getElementById("mode-glow-effect");
+
+      if (mode === "manual") {
+        // Toggle flag
+        isSpeechListeningRequested = false;
+        if (voiceRecognition) {
+          try {
+            voiceRecognition.stop();
+          } catch(e) {
+            console.warn("Error stopping voiceRecognition:", e);
+          }
+        }
+
+        // Apply Manual Active styles
+        if (manualBtn) {
+          manualBtn.className = BTN_MANUAL_ACTIVE;
+        }
+        if (voiceBtn) {
+          voiceBtn.className = BTN_VOICE_INACTIVE;
+        }
+        if (statusText) {
+          statusText.innerText = "Manual Controller Active";
+        }
+        if (descText) {
+          descText.innerText = "Play using mouse clicks and buttons manually";
+        }
+        if (iconContainer) {
+          iconContainer.className = "w-12 h-12 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-center text-indigo-400 transition-colors";
+        }
+        if (icon) {
+          icon.setAttribute("data-lucide", "mouse-pointer");
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }
+        if (glowEffect) {
+          glowEffect.className = "absolute -top-12 -left-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none transition-all";
+        }
+      } else if (mode === "voice") {
+        if (!voiceRecognition) {
+          alert("Your browser does not support the Web Speech API recognition standard. Try Google Chrome!");
+          return;
+        }
+
+        // Toggle flag
+        isSpeechListeningRequested = true;
+        if (!isSpeechListening && !isSpeakingNow && !window.speechSynthesis.speaking) {
+          try {
+            voiceRecognition.start();
+          } catch (err) {
+            console.warn("Voice initialization failed:", err);
+          }
+        }
+
+        // Apply Voice Active styles
+        if (manualBtn) {
+          manualBtn.className = BTN_MANUAL_INACTIVE;
+        }
+        if (voiceBtn) {
+          voiceBtn.className = BTN_VOICE_ACTIVE;
+        }
+        if (statusText) {
+          statusText.innerText = "Hands-Free Voice Mode Active";
+        }
+        if (descText) {
+          descText.innerText = 'Microphone live! Say "Spin", "Truth", "Dare", or "Complete".';
+        }
+        if (iconContainer) {
+          iconContainer.className = "w-12 h-12 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center text-emerald-400 transition-colors";
+        }
+        if (icon) {
+          icon.setAttribute("data-lucide", "mic");
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }
+        if (glowEffect) {
+          glowEffect.className = "absolute -top-12 -left-12 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none transition-all";
+        }
+      }
+    }
+
+    function triggerVoiceCommand(phrase) {
+      document.getElementById("speech-subtitle-text").innerText = `Voice Simulation: "${phrase}"`;
+      const p = phrase.toLowerCase();
+      if (p.includes("complete")) {
+        completeChallenge();
+      } else if (p.includes("skip") || p.includes("pass")) {
+        passTurn();
+      } else if (p.includes("easy") || p.includes("change")) {
+        document.getElementById("select-difficulty").value = "Easy";
+        passTurn();
+      }
+    }
+
+
+    // UTILS
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
