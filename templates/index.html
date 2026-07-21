@@ -1882,6 +1882,14 @@
     };
 
     function matchVoiceCommand(transcript, commandKey) {
+      if (commandKey === "start") {
+        const startWords = [
+          "enter playground", "playground", "start game", "start", "enter", "go", "play", "begin",
+          "ಆಟದ", "ಪ್ರವೇಶಿಸಿ", "ಶುರು", "ആരംഭിക്കുക", "प्रवेश", "शुरू", "ప్రవేశించు", "మొదలు", 
+          "நுழையுங்கள்", "தொடங்கு", "കളിക്കളം", "खेळाच्या", "રમત", "খেলার", "ਖੇਡ", "ଖେଳ"
+        ];
+        return startWords.some(keyword => transcript.includes(keyword.toLowerCase()));
+      }
       const currentLang = currentLanguageSetting || "English";
       const englishSet = VOICE_COMMANDS.English[commandKey] || [];
       const localizedSet = (VOICE_COMMANDS[currentLang] && VOICE_COMMANDS[currentLang][commandKey]) || [];
@@ -2814,7 +2822,11 @@
         document.getElementById("speech-subtitle-text").innerText = `Heard Command: "${transcript}"`;
         
         // Match phrases using localized multi-lingual commands
-        if (matchVoiceCommand(transcript, "spin")) {
+        if (matchVoiceCommand(transcript, "start")) {
+          if (!document.getElementById("view-setup").classList.contains("hidden")) {
+            startGame();
+          }
+        } else if (matchVoiceCommand(transcript, "spin")) {
           if (!document.getElementById("view-lobby").classList.contains("hidden")) {
             spinWheel();
           }
